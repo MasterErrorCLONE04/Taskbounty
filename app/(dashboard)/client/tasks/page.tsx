@@ -49,7 +49,7 @@ export default async function MyTasksPage({
     }
 
     if (tab === 'active') {
-        query = query.in('status', ['OPEN', 'ASSIGNED', 'IN_PROGRESS', 'SUBMITTED', 'DISPUTED']);
+        query = query.in('status', ['DRAFT', 'OPEN', 'ASSIGNED', 'IN_PROGRESS', 'SUBMITTED', 'DISPUTED']);
     } else if (tab === 'history') {
         query = query.in('status', ['COMPLETED', 'CANCELLED']);
     }
@@ -66,7 +66,7 @@ export default async function MyTasksPage({
 
     // Counts for tabs
     const { data: allTasks } = await supabase.from('tasks').select('status').eq('client_id', user.id);
-    const activeCount = allTasks?.filter(t => ['OPEN', 'ASSIGNED', 'IN_PROGRESS', 'SUBMITTED', 'DISPUTED'].includes(t.status)).length || 0;
+    const activeCount = allTasks?.filter(t => ['DRAFT', 'OPEN', 'ASSIGNED', 'IN_PROGRESS', 'SUBMITTED', 'DISPUTED'].includes(t.status)).length || 0;
 
     return (
         <div className="p-12 max-w-7xl mx-auto">

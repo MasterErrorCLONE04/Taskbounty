@@ -75,8 +75,8 @@ export default function LegalLayout({ children, title, lastUpdated, sidebarLinks
                                             key={link.href}
                                             href={link.href}
                                             className={`block text-[11px] font-black uppercase tracking-widest transition-all ${i === 0
-                                                    ? 'text-sky-500'
-                                                    : 'text-slate-400 hover:text-slate-900'
+                                                ? 'text-sky-500'
+                                                : 'text-slate-400 hover:text-slate-900'
                                                 }`}
                                         >
                                             {link.name}
@@ -165,8 +165,8 @@ export default function LegalLayout({ children, title, lastUpdated, sidebarLinks
                         <h5 className="text-[10px] font-black text-slate-900 uppercase tracking-widest">Legal</h5>
                         <ul className="space-y-4 text-[13px] font-bold text-slate-400">
                             <li><Link href="/legal/privacy" className="hover:text-sky-500 transition-colors">Privacidad</Link></li>
-                            <li><Link href="/legal/terms" className="hover:text-sky-500 transition-colors text-sky-500">Términos</Link></li>
-                            <li><Link href="#" className="hover:text-sky-500 transition-colors">Política de Escrow</Link></li>
+                            <li><Link href="/legal/terms" className="hover:text-sky-500 transition-colors">Términos</Link></li>
+                            <li><Link href="/legal/cookies" className="hover:text-sky-500 transition-colors">Cookies</Link></li>
                         </ul>
                     </div>
                 </div>

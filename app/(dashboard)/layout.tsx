@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
-import Sidebar from '@/components/dashboard/Sidebar';
 import { redirect } from 'next/navigation';
+import TopNavbar from '@/components/dashboard/TopNavbar';
 
 export default async function DashboardLayout({
     children,
@@ -15,16 +15,14 @@ export default async function DashboardLayout({
     }
 
     return (
-        <div className="flex min-h-screen bg-slate-50/50">
-            {/* Sidebar - Fixed on desktop, hidden on mobile (handled in component) */}
-            <Sidebar user={user} />
+        <div className="min-h-screen bg-slate-50/50">
+            {/* Top Navigation */}
+            <TopNavbar user={user} />
 
-            {/* Main Content Area */}
-            <main className="flex-1 lg:pl-72">
-                <div className="min-h-screen">
-                    {children}
-                </div>
-            </main>
+            {/* Main Content Area - Centered for the professional look */}
+            <div className="pt-16 max-w-7xl mx-auto px-4 md:px-8 py-8">
+                {children}
+            </div>
         </div>
     );
 }

@@ -10,7 +10,8 @@ import {
     TrendingUp,
     ShieldCheck,
     ArrowLeft,
-    CheckCircle2
+    CheckCircle2,
+    BadgeCheck
 } from 'lucide-react'
 import { getPublicProfile } from '@/actions/profile'
 
@@ -32,10 +33,14 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
                         <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
                         Volver al Marketplace
                     </Link>
-                    <div className="flex items-center gap-2 text-sky-500">
-                        <ShieldCheck className="w-5 h-5" />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Perfil Verificado</span>
-                    </div>
+                    {profile.is_verified && (
+                        <div className="flex items-center gap-2 text-sky-500">
+                            <BadgeCheck className="w-5 h-5 fill-sky-500/10" />
+                            <span className="text-[10px] font-black uppercase tracking-widest">
+                                {profile.verified_until ? `Verificado hasta ${new Date(profile.verified_until).toLocaleDateString()}` : 'Profesional Verificado'}
+                            </span>
+                        </div>
+                    )}
                 </div>
             </nav>
 

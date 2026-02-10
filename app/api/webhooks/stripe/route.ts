@@ -1,6 +1,7 @@
 import { headers } from 'next/headers'
 import { stripe } from '@/lib/stripe'
 import { createClient } from '@/lib/supabase/server'
+import { revalidatePath } from 'next/cache'
 
 export async function POST(req: Request) {
     const body = await req.text()
@@ -54,6 +55,33 @@ export async function POST(req: Request) {
                     metadata: { stripe_payment_intent_id: paymentIntent.id }
                 })
 
+            break
+
+        case 'checkout.session.completed':
+            const session = event.data.object
+
+            if (session.metadata?.type === 'verification') {
+                const userId = session.metadata.user_id
+
+                // Set verified_until to 30 days from now
+                const verifiedUntil = new Date()
+                verifiedUntil.setDate(verifiedUntil.getDate() + 30)
+
+                await supabase
+                    .from('users')
+                    .update({
+                        is_verified: true,
+                        verified_until: verifiedUntil.toISOString(),
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', userId)
+
+                // 2. Revalidate paths
+                revalidatePath(`/profiles/${userId}`)
+                revalidatePath('/freelancers')
+                revalidatePath('/client/settings')
+                revalidatePath('/worker/settings')
+            }
             break
 
         case 'payment_intent.payment_failed':

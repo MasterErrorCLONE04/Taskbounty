@@ -112,18 +112,16 @@ export async function getRecentOpenTasks() {
 
         const { data: tasks, error } = await supabase
             .from('tasks')
-            .select('*')
+            .select(`
+                *,
+                client:users!client_id(name, avatar_url, bio)
+            `)
             .eq('status', 'OPEN')
             .order('created_at', { ascending: false })
             .limit(4)
 
         if (error) {
-            console.error('Supabase Error in getRecentOpenTasks:', {
-                message: error.message,
-                details: error.details,
-                hint: error.hint,
-                code: error.code
-            })
+            console.error('Supabase Error in getRecentOpenTasks:', error.message, error.details, error.hint)
             return []
         }
 
@@ -131,5 +129,42 @@ export async function getRecentOpenTasks() {
     } catch (err: any) {
         console.error('Unexpected Error in getRecentOpenTasks:', err)
         return []
+    }
+}
+/**
+ * Quick create a draft task from the dashboard feed
+ */
+/**
+ * Quick create a draft task from the dashboard feed
+ */
+export async function createDraftTask(description: string, bounty_amount: number) {
+    try {
+        const supabase = await createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+
+        if (!user) throw new Error('Must be logged in')
+
+        // Create a basic draft
+        const { data: task, error } = await supabase
+            .from('tasks')
+            .insert({
+                client_id: user.id,
+                title: 'New Bounty Request', // Default title, user can edit later
+                description: description,
+                requirements: 'To be defined', // Default to satisfy NOT NULL
+                category: 'General', // Default to satisfy NOT NULL if applicable
+                status: 'DRAFT',
+                bounty_amount: bounty_amount,
+                deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // Default 1 week
+            })
+            .select('id')
+            .single()
+
+        if (error) throw error
+
+        return { success: true, taskId: task.id }
+    } catch (error: any) {
+        console.error('Create Draft Error:', error)
+        return { success: false, error: error.message }
     }
 }

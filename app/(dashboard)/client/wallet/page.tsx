@@ -12,6 +12,7 @@ import {
     ShieldCheck
 } from 'lucide-react';
 import { redirect } from 'next/navigation';
+import TopUpButton from '@/components/wallet/TopUpButton';
 
 export default async function WalletPage() {
     const supabase = await createClient();
@@ -75,9 +76,7 @@ export default async function WalletPage() {
                         </div>
 
                         <div className="mt-16 flex items-center gap-6">
-                            <button className="flex-1 bg-sky-500 hover:bg-sky-400 text-white font-black py-5 rounded-2xl transition-all shadow-lg shadow-sky-500/20 active:scale-95 uppercase tracking-widest text-xs">
-                                Añadir Fondos
-                            </button>
+                            <TopUpButton />
                             <button className="flex-1 bg-white/10 hover:bg-white/20 text-white font-black py-5 rounded-2xl transition-all backdrop-blur-md active:scale-95 uppercase tracking-widest text-xs border border-white/10">
                                 Ver Detalles de Pago
                             </button>
@@ -169,9 +168,9 @@ export default async function WalletPage() {
                                         <td className="px-10 py-8">
                                             <div className="flex justify-center">
                                                 <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest ${payment.status === 'RELEASED' ? 'bg-green-50 text-green-500' :
-                                                        payment.status === 'HELD' ? 'bg-amber-50 text-amber-500' :
-                                                            payment.status === 'REFUNDED' ? 'bg-slate-100 text-slate-500' :
-                                                                'bg-slate-100 text-slate-400'
+                                                    payment.status === 'HELD' ? 'bg-amber-50 text-amber-500' :
+                                                        payment.status === 'REFUNDED' ? 'bg-slate-100 text-slate-500' :
+                                                            'bg-slate-100 text-slate-400'
                                                     }`}>
                                                     {payment.status === 'HELD' ? 'En Escrow' : payment.status}
                                                 </span>

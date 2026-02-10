@@ -151,7 +151,7 @@ export default function LoginPage() {
                 <footer className="absolute bottom-10 left-0 w-full flex justify-center gap-8 text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] mb-4">
                     <Link href="/legal/terms" className="hover:text-slate-500 transition-colors">Términos</Link>
                     <Link href="/legal/privacy" className="hover:text-slate-500 transition-colors">Privacidad</Link>
-                    <Link href="/legal/cookies" className="hover:text-slate-500 transition-colors">Ayuda</Link>
+                    <Link href="/legal/cookies" className="hover:text-slate-500 transition-colors">Cookies</Link>
                 </footer>
             </main>
         </div>

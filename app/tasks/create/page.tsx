@@ -1,36 +1,49 @@
+
 import React from 'react'
 import TaskForm from '@/components/tasks/TaskForm'
 import { ShieldCheck, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
+import { createClient } from '@/lib/supabase/server'
+import { getProfile } from '@/actions/profile'
+import { TopNavbar } from '@/components/layout/TopNavbar'
+import { LeftSidebar } from '@/components/layout/LeftSidebar'
+import { RightSidebar } from '@/components/layout/RightSidebar'
+import { redirect } from 'next/navigation'
 
-export default function CreateTaskPage() {
+export default async function CreateTaskPage() {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+        redirect('/auth')
+    }
+
+    const profile = await getProfile(user.id)
+
     return (
-        <div className="min-h-screen bg-background pb-20">
-            <nav className="p-6 border-b border-border/40 bg-card mb-12">
-                <div className="max-w-5xl mx-auto flex items-center justify-between">
-                    <Link href="/client/dashboard" className="flex items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors group">
-                        <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-                        Volver al panel
-                    </Link>
-                    <div className="flex items-center gap-2">
-                        <ShieldCheck className="w-5 h-5 text-primary" />
-                        <span className="font-bold text-sm">Creación Segura</span>
-                    </div>
-                </div>
-            </nav>
+        <div className="h-screen bg-white flex flex-col overflow-hidden">
+            <TopNavbar user={profile || user} />
 
-            <main className="max-w-4xl mx-auto px-6">
-                <header className="mb-12 text-center">
-                    <h1 className="text-5xl font-black tracking-tight mb-4">
-                        Publicar nueva tarea
-                    </h1>
-                    <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-                        Completa los detalles de tu tarea. Recuerda que el monto será retenido en escrow para garantizar el pago al trabajador.
-                    </p>
-                </header>
+            <div className="flex-1 flex justify-center overflow-hidden">
+                {/* Left Sidebar - Navigation */}
+                <LeftSidebar user={profile || user} />
 
-                <TaskForm />
-            </main>
+                <main className="flex-1 max-w-4xl mx-auto px-6 overflow-y-auto pb-20 pt-8 no-scrollbar border-x border-slate-50">
+                    <header className="mb-12 text-center">
+                        <h1 className="text-4xl font-black tracking-tight mb-4">
+                            Post a New Bounty
+                        </h1>
+                        <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+                            Complete your task details. The bounty amount will be held in escrow to guarantee payment.
+                        </p>
+                    </header>
+
+                    <TaskForm />
+                </main>
+
+                {/* Right Sidebar - Widgets */}
+                <RightSidebar user={profile || user} />
+            </div>
         </div>
     )
 }

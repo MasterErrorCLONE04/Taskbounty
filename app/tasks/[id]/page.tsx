@@ -6,7 +6,6 @@ import {
     ArrowLeft,
     ShieldCheck,
     Clock,
-    DollarSign,
     FileText,
     ListChecks,
     MessageSquare,
@@ -14,6 +13,10 @@ import {
     Settings,
     Briefcase
 } from 'lucide-react'
+import { getProfile } from '@/actions/profile'
+import { TopNavbar } from '@/components/layout/TopNavbar'
+import { LeftSidebar } from '@/components/layout/LeftSidebar'
+import { RightSidebar } from '@/components/layout/RightSidebar'
 
 export default async function TaskDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const supabase = await createClient()
@@ -41,6 +44,7 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
 
     // 2. Get current user
     const { data: { user } } = await supabase.auth.getUser()
+    const profile = user ? await getProfile(user.id) : null
     const isOwner = user?.id === task.client_id
     const userRole = user?.user_metadata?.role
 
@@ -56,155 +60,166 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
 
     return (
-        <div className="min-h-screen bg-background pb-20">
-            {/* Top Navigation */}
-            <nav className="p-6 border-b border-border/40 bg-card">
-                <div className="max-w-5xl mx-auto flex items-center justify-between">
-                    <Link href="/tasks/explore" className="flex items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors group">
-                        <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-                        Volver al explorador
-                    </Link>
-                    <div className="flex items-center gap-2">
-                        <ShieldCheck className="w-5 h-5 text-primary" />
-                        <span className="font-bold text-sm">Escrow Protegido</span>
-                    </div>
-                </div>
-            </nav>
+        <div className="h-screen bg-white flex flex-col overflow-hidden">
+            <TopNavbar user={profile || user} />
 
-            <main className="max-w-5xl mx-auto px-6 py-12">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+            <div className="flex-1 flex justify-center overflow-hidden">
+                <LeftSidebar user={profile || user} />
 
-                    {/* Main Content */}
-                    <div className="lg:col-span-2 space-y-12">
-                        <header>
-                            <div className="flex items-center gap-3 mb-4">
-                                <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${task.status === 'OPEN' ? 'bg-green-500/10 text-green-500 border border-green-500/20' :
-                                    'bg-primary/10 text-primary border border-primary/20'
-                                    }`}>
-                                    {task.status}
-                                </span>
-                            </div>
-                            <h1 className="text-4xl font-black tracking-tight mb-4">
-                                {task.title}
-                            </h1>
-                            <div className="flex items-center gap-6">
-                                <div className="flex items-center gap-2 text-muted-foreground">
-                                    <span className="text-sm font-medium">Publicado por</span>
-                                    <span className="text-foreground font-bold">{client?.name || 'Cliente'}</span>
-                                </div>
-                                <div className="flex items-center gap-1 text-yellow-500 font-bold">
-                                    ★ {client?.rating || '0.0'}
+                <main className="flex-1 max-w-5xl border-x border-slate-50 h-full overflow-y-auto no-scrollbar bg-white">
+                    <div className="min-h-screen pb-20">
+                        {/* Top Navigation */}
+                        <nav className="p-6 border-b border-slate-100 bg-white sticky top-0 z-10">
+                            <div className="flex items-center justify-between">
+                                <Link href="/tasks/explore" className="flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-slate-900 transition-colors group">
+                                    <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+                                    Volver al explorador
+                                </Link>
+                                <div className="flex items-center gap-2">
+                                    <ShieldCheck className="w-5 h-5 text-blue-600" />
+                                    <span className="font-bold text-sm text-slate-700">Escrow Protegido</span>
                                 </div>
                             </div>
-                        </header>
+                        </nav>
 
-                        <section className="space-y-4">
-                            <div className="flex items-center gap-2 text-lg font-bold">
-                                <FileText className="w-5 h-5 text-primary" />
-                                Descripción
-                            </div>
-                            <p className="text-muted-foreground leading-relaxed text-lg">
-                                {task.description}
-                            </p>
-                        </section>
+                        <div className="px-6 py-8">
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-                        <section className="space-y-4">
-                            <div className="flex items-center gap-2 text-lg font-bold">
-                                <ListChecks className="w-5 h-5 text-primary" />
-                                Requisitos
-                            </div>
-                            <div className="bg-card border border-border rounded-3xl p-8">
-                                <pre className="whitespace-pre-wrap font-sans text-muted-foreground leading-relaxed">
-                                    {task.requirements}
-                                </pre>
-                            </div>
-                        </section>
-                    </div>
+                                {/* Main Content */}
+                                <div className="lg:col-span-2 space-y-8">
+                                    <header>
+                                        <div className="flex items-center gap-3 mb-4">
+                                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${task.status === 'OPEN' ? 'bg-green-500/10 text-green-500 border border-green-500/20' :
+                                                'bg-blue-600/10 text-blue-600 border border-blue-600/20'
+                                                }`}>
+                                                {task.status}
+                                            </span>
+                                        </div>
+                                        <h1 className="text-3xl font-black tracking-tight mb-4 text-slate-900">
+                                            {task.title}
+                                        </h1>
+                                        <div className="flex items-center gap-6">
+                                            <div className="flex items-center gap-2 text-slate-500">
+                                                <span className="text-sm font-medium">Publicado por</span>
+                                                <span className="text-slate-900 font-bold">{client?.name || 'Cliente'}</span>
+                                            </div>
+                                            <div className="flex items-center gap-1 text-yellow-500 font-bold text-sm">
+                                                ★ {client?.rating || '0.0'}
+                                            </div>
+                                        </div>
+                                    </header>
 
-                    {/* Sidebar / Actions */}
-                    <div className="space-y-8">
-                        <div className="bg-card border-2 border-primary/20 rounded-3xl p-8 shadow-2xl shadow-primary/5 sticky top-8">
-                            <div className="mb-8">
-                                <span className="text-sm text-muted-foreground font-bold uppercase tracking-widest block mb-2">Bounty Ofrecido</span>
-                                <div className="flex items-baseline gap-2">
-                                    <span className="text-4xl font-black">${task.bounty_amount}</span>
-                                    <span className="text-muted-foreground font-bold">USD</span>
+                                    <section className="space-y-3">
+                                        <div className="flex items-center gap-2 text-lg font-bold text-slate-800">
+                                            <FileText className="w-5 h-5 text-blue-500" />
+                                            Descripción
+                                        </div>
+                                        <p className="text-slate-600 leading-relaxed">
+                                            {task.description}
+                                        </p>
+                                    </section>
+
+                                    <section className="space-y-3">
+                                        <div className="flex items-center gap-2 text-lg font-bold text-slate-800">
+                                            <ListChecks className="w-5 h-5 text-blue-500" />
+                                            Requisitos
+                                        </div>
+                                        <div className="bg-slate-50 border border-slate-100 rounded-2xl p-6">
+                                            <pre className="whitespace-pre-wrap font-sans text-slate-600 leading-relaxed text-sm">
+                                                {task.requirements}
+                                            </pre>
+                                        </div>
+                                    </section>
                                 </div>
-                            </div>
 
-                            <div className="space-y-4 mb-8">
-                                <div className="flex justify-between items-center text-sm">
-                                    <span className="text-muted-foreground flex items-center gap-2 font-medium">
-                                        <Clock className="w-4 h-4" /> Tiempo restante
-                                    </span>
-                                    <span className="font-bold text-foreground">{diffDays} días</span>
-                                </div>
-                                <div className="flex justify-between items-center text-sm">
-                                    <span className="text-muted-foreground flex items-center gap-2 font-medium">
-                                        <MessageSquare className="w-4 h-4" /> Aplicaciones
-                                    </span>
-                                    <span className="font-bold text-foreground">{appCount} recibidas</span>
-                                </div>
-                            </div>
+                                {/* Sidebar / Actions */}
+                                <div className="space-y-6">
+                                    <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xl shadow-slate-200/50 sticky top-24">
+                                        <div className="mb-6">
+                                            <span className="text-xs text-slate-400 font-bold uppercase tracking-widest block mb-1">Bounty Ofrecido</span>
+                                            <div className="flex items-baseline gap-1">
+                                                <span className="text-3xl font-black text-slate-900">${task.bounty_amount}</span>
+                                                <span className="text-slate-500 font-bold text-sm">USD</span>
+                                            </div>
+                                        </div>
 
-                            <div className="space-y-3">
-                                {isOwner ? (
-                                    <Link
-                                        href={`/tasks/${id}/manage`}
-                                        className="w-full bg-primary text-primary-foreground h-14 rounded-2xl font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-all shadow-lg shadow-primary/20"
-                                    >
-                                        <Settings className="w-5 h-5" />
-                                        Gestionar Tarea
-                                    </Link>
-                                ) : userRole === 'worker' || userRole === 'both' ? (
-                                    task.status === 'OPEN' ? (
-                                        <Link
-                                            href={`/tasks/${id}/apply`}
-                                            className="w-full bg-primary text-primary-foreground h-14 rounded-2xl font-bold flex items-center justify-center hover:opacity-90 transition-all shadow-lg shadow-primary/20"
-                                        >
-                                            Aplicar ahora
-                                        </Link>
-                                    ) : task.assigned_worker_id === user?.id ? (
-                                        <Link
-                                            href={`/tasks/${id}/work`}
-                                            className="w-full bg-primary text-primary-foreground h-14 rounded-2xl font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-all shadow-lg shadow-primary/20"
-                                        >
-                                            <Briefcase className="w-5 h-5" />
-                                            Ir a sala de trabajo
-                                        </Link>
-                                    ) : (
-                                        <button className="w-full bg-muted text-muted-foreground h-14 rounded-2xl font-bold cursor-not-allowed opacity-50">
-                                            Ya no acepta aplicaciones
-                                        </button>
-                                    )
-                                ) : !user ? (
-                                    <Link
-                                        href="/login"
-                                        className="w-full bg-primary text-primary-foreground h-14 rounded-2xl font-bold flex items-center justify-center hover:opacity-90 transition-all shadow-lg shadow-primary/20"
-                                    >
-                                        Ingresa para aplicar
-                                    </Link>
-                                ) : null}
+                                        <div className="space-y-3 mb-6">
+                                            <div className="flex justify-between items-center text-sm">
+                                                <span className="text-slate-500 flex items-center gap-2 font-medium">
+                                                    <Clock className="w-4 h-4" /> Tiempo restante
+                                                </span>
+                                                <span className="font-bold text-slate-700">{diffDays} días</span>
+                                            </div>
+                                            <div className="flex justify-between items-center text-sm">
+                                                <span className="text-slate-500 flex items-center gap-2 font-medium">
+                                                    <MessageSquare className="w-4 h-4" /> Aplicaciones
+                                                </span>
+                                                <span className="font-bold text-slate-700">{appCount} recibidas</span>
+                                            </div>
+                                        </div>
 
-                                <div className="flex items-start gap-2 p-3 bg-muted rounded-xl border border-border text-[10px] leading-tight text-muted-foreground">
-                                    <AlertCircle className="w-4 h-4 text-primary flex-shrink-0" />
-                                    Al aplicar, aceptas nuestros términos de servicio y política de escrow.
-                                </div>
-                            </div>
+                                        <div className="space-y-3">
+                                            {isOwner ? (
+                                                <Link
+                                                    href={`/tasks/${id}/manage`}
+                                                    className="w-full bg-slate-900 text-white h-12 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-slate-800 transition-all shadow-md"
+                                                >
+                                                    <Settings className="w-4 h-4" />
+                                                    Gestionar Tarea
+                                                </Link>
+                                            ) : userRole === 'worker' || userRole === 'both' ? (
+                                                task.status === 'OPEN' ? (
+                                                    <Link
+                                                        href={`/tasks/${id}/apply`}
+                                                        className="w-full bg-blue-600 text-white h-12 rounded-xl font-bold flex items-center justify-center hover:bg-blue-700 transition-all shadow-md shadow-blue-500/20"
+                                                    >
+                                                        Aplicar ahora
+                                                    </Link>
+                                                ) : task.assigned_worker_id === user?.id ? (
+                                                    <Link
+                                                        href={`/tasks/${id}/work`}
+                                                        className="w-full bg-blue-600 text-white h-12 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-blue-700 transition-all shadow-md shadow-blue-500/20"
+                                                    >
+                                                        <Briefcase className="w-4 h-4" />
+                                                        Ir a sala de trabajo
+                                                    </Link>
+                                                ) : (
+                                                    <button className="w-full bg-slate-100 text-slate-400 h-12 rounded-xl font-bold cursor-not-allowed">
+                                                        Ya no acepta aplicaciones
+                                                    </button>
+                                                )
+                                            ) : !user ? (
+                                                <Link
+                                                    href="/login"
+                                                    className="w-full bg-blue-600 text-white h-12 rounded-xl font-bold flex items-center justify-center hover:bg-blue-700 transition-all shadow-md shadow-blue-500/20"
+                                                >
+                                                    Ingresa para aplicar
+                                                </Link>
+                                            ) : null}
 
-                            <div className="mt-8 pt-8 border-t border-border/50">
-                                <div className="flex items-center gap-3 text-green-500 bg-green-500/5 p-4 rounded-2xl border border-green-500/10">
-                                    <ShieldCheck className="w-6 h-6 flex-shrink-0" />
-                                    <div className="text-[11px] font-bold leading-normal">
-                                        PAGO GARANTIZADO: Este bounty ya ha sido depositado en escrow por el cliente.
+                                            <div className="flex items-start gap-2 p-3 bg-slate-50 rounded-xl border border-slate-100 text-[10px] leading-tight text-slate-500">
+                                                <AlertCircle className="w-3 h-3 text-blue-500 flex-shrink-0 mt-0.5" />
+                                                Al aplicar, aceptas nuestros términos de servicio y política de escrow.
+                                            </div>
+                                        </div>
+
+                                        <div className="mt-6 pt-6 border-t border-slate-100">
+                                            <div className="flex items-center gap-3 text-green-600 bg-green-50 p-3 rounded-xl border border-green-100">
+                                                <ShieldCheck className="w-5 h-5 flex-shrink-0" />
+                                                <div className="text-[10px] font-bold leading-normal">
+                                                    PAGO GARANTIZADO: Este bounty ya ha sido depositado en escrow por el cliente.
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+                </main>
 
-                </div>
-            </main>
+                <RightSidebar user={profile || user} />
+            </div>
         </div>
     )
 }

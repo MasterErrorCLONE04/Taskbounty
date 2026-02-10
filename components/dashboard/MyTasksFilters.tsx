@@ -60,6 +60,7 @@ export default function MyTasksFilters({
                     className="px-6 h-14 bg-white border border-slate-100 rounded-2xl text-xs font-bold text-slate-500 hover:border-sky-200 transition-all outline-none shadow-sm shadow-slate-100 appearance-none min-w-[180px]"
                 >
                     <option value="all">Estado: Todos</option>
+                    <option value="DRAFT">Borrador</option>
                     <option value="OPEN">Abierto</option>
                     <option value="IN_PROGRESS">En Progreso</option>
                     <option value="DISPUTED">En Disputa</option>

@@ -114,22 +114,6 @@ export default function SignupPage() {
                             />
                         </div>
 
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-900 uppercase tracking-widest ml-1">
-                                ¿Qué rol prefieres?
-                            </label>
-                            <select
-                                name="role"
-                                className="w-full h-14 px-5 rounded-2xl bg-slate-50 border-none outline-none focus:ring-2 focus:ring-sky-500 transition-all font-bold text-slate-500 text-xs uppercase tracking-widest"
-                                value={formData.role}
-                                onChange={handleChange}
-                            >
-                                <option value="both">Ambos (Cliente y Trabajador)</option>
-                                <option value="client">Cliente (Quiero delegar tareas)</option>
-                                <option value="worker">Trabajador (Quiero realizar tareas)</option>
-                            </select>
-                        </div>
-
                         <button
                             type="submit"
                             disabled={loading}
@@ -144,10 +128,10 @@ export default function SignupPage() {
                     </p>
                 </div>
 
-                <footer className="mt-auto py-10 flex gap-8 text-[10px] font-black text-slate-300 uppercase tracking-[0.2em]">
+                <footer className="absolute bottom-10 left-0 w-full flex justify-center gap-8 text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] mb-4">
                     <Link href="/legal/terms" className="hover:text-slate-500 transition-colors">Términos</Link>
                     <Link href="/legal/privacy" className="hover:text-slate-500 transition-colors">Privacidad</Link>
-                    <Link href="/legal/cookies" className="hover:text-slate-500 transition-colors">Ayuda</Link>
+                    <Link href="/legal/cookies" className="hover:text-slate-500 transition-colors">Cookies</Link>
                 </footer>
             </main>
         </div>

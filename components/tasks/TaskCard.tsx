@@ -1,88 +1,73 @@
-import React from 'react';
-import Link from 'next/link';
-import { DollarSign, Clock, ArrowUpRight, ShieldCheck, Star } from 'lucide-react';
 
-interface Task {
-    id: string;
-    title: string;
-    description: string;
-    bounty_amount: number;
-    deadline: string;
-    status: string;
-    client_id: string;
-    profiles?: {
-        name: string;
-        rating: number | null;
-    }
+import { Lock } from "lucide-react"
+
+export interface TaskItemProps {
+    id: string
+    taskId: string
+    status: 'IN PROGRESS' | 'REVIEWING' | 'ESCROW ACTIVE'
+    title: string
+    personType: 'Client' | 'Hunter'
+    personName: string
+    personAvatar: string
+    amount: number
+    currency: string
+    escrowActive: boolean
+    actions: string[]
 }
 
-export default function TaskCard({ task }: { task: Task }) {
-    // Calculate remaining days
-    const deadlineDate = new Date(task.deadline);
-    const now = new Date();
-    const diffTime = Math.abs(deadlineDate.getTime() - now.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
+export function TaskCard({ task }: { task: TaskItemProps }) {
     return (
-        <div className="group relative bg-card border border-border rounded-3xl p-6 hover:shadow-xl hover:border-primary/50 transition-all duration-300">
-            <div className="flex justify-between items-start mb-4">
-                <div className="flex items-center gap-1.5 px-3 py-1 bg-green-500/10 border border-green-500/20 rounded-full text-green-500 text-xs font-bold uppercase tracking-wider">
-                    <DollarSign className="w-3 h-3" />
-                    Escrow Activo
+        <div className="p-6 border-b border-slate-50 hover:bg-slate-50/30 transition-all cursor-pointer group">
+            <div className="flex justify-between items-start mb-3">
+                <div className="flex items-center gap-3">
+                    <span className={`text-[10px] font-black px-2 py-0.5 rounded-sm uppercase tracking-wider ${task.status === 'IN PROGRESS' ? 'bg-yellow-100 text-yellow-700' :
+                            task.status === 'REVIEWING' ? 'bg-blue-100 text-blue-700' :
+                                'bg-green-100 text-green-700'
+                        }`}>
+                        {task.status}
+                    </span>
+                    <span className="text-slate-400 text-[11px] font-bold flex items-center gap-1">
+                        <span className="w-1 h-1 rounded-full bg-slate-300"></span>
+                        ID: {task.taskId}
+                    </span>
                 </div>
-                <div className="text-sm font-semibold text-muted-foreground flex items-center gap-1.5">
-                    <Clock className="w-4 h-4" />
-                    {diffDays}d restantes
+                <div className="text-right">
+                    <p className="text-xl font-black text-slate-900 leading-none">
+                        ${task.amount.toFixed(2)} <span className="text-[10px] font-bold text-slate-500 uppercase ml-0.5">{task.currency}</span>
+                    </p>
+                    {task.escrowActive && (
+                        <div className="flex items-center justify-end gap-1 mt-1">
+                            <Lock size={10} className="text-green-600" />
+                            <span className="text-[9px] font-black uppercase text-green-600 tracking-wider">Escrow Active</span>
+                        </div>
+                    )}
                 </div>
             </div>
 
-            <h3 className="text-xl font-bold mb-3 group-hover:text-primary transition-colors line-clamp-1">
+            <h3 className="text-lg font-bold text-slate-900 mb-4 group-hover:text-blue-500 transition-colors">
                 {task.title}
             </h3>
 
-            <p className="text-muted-foreground text-sm line-clamp-2 mb-6 leading-relaxed">
-                {task.description}
-            </p>
-
-            {task.profiles && (
-                <Link
-                    href={`/profiles/${task.client_id}`}
-                    className="flex items-center gap-2 mb-6 p-2 rounded-xl hover:bg-slate-50 transition-colors group/profile"
-                >
-                    <div className="w-6 h-6 bg-slate-100 rounded-lg flex items-center justify-center text-[10px] font-black text-slate-400">
-                        {task.profiles.name.slice(0, 1)}
-                    </div>
-                    <div className="flex flex-col">
-                        <span className="text-[10px] font-black text-slate-900 group-hover/profile:text-sky-500 transition-colors">
-                            {task.profiles.name}
-                        </span>
-                        <div className="flex items-center gap-1 text-[8px] font-bold text-sky-500">
-                            <Star className="w-2 h-2 fill-sky-500" />
-                            {task.profiles.rating || 'New'}
-                        </div>
-                    </div>
-                </Link>
-            )}
-
-            <div className="flex items-center justify-between mt-auto pt-6 border-t border-border/50">
-                <div>
-                    <span className="text-xs text-muted-foreground block mb-0.5 uppercase font-bold tracking-widest">Bounty</span>
-                    <span className="text-2xl font-black text-foreground">
-                        ${task.bounty_amount.toLocaleString()}
-                    </span>
-                </div>
-
-                <Link
-                    href={`/tasks/${task.id}`}
-                    className="flex items-center justify-center w-12 h-12 bg-primary text-primary-foreground rounded-full hover:scale-110 transition-transform shadow-lg shadow-primary/20 group-hover:rotate-12"
-                >
-                    <ArrowUpRight className="w-6 h-6" />
-                </Link>
+            <div className="flex items-center gap-2 mb-6">
+                <img src={task.personAvatar} alt={task.personName} className="w-6 h-6 rounded-full object-cover shadow-sm bg-slate-200" />
+                <p className="text-[13px]">
+                    <span className="text-slate-500 font-medium">{task.personType}:</span> <span className="font-bold text-slate-900 ml-1">{task.personName}</span>
+                </p>
             </div>
 
-            <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                <ShieldCheck className="w-4 h-4 text-primary" />
+            <div className="flex gap-3">
+                {task.actions.map((action, idx) => (
+                    <button
+                        key={idx}
+                        className={`px-5 py-1.5 rounded-full text-[13px] font-bold transition-all ${idx === 0
+                                ? 'bg-blue-500 text-white hover:bg-blue-600 shadow-sm hover:shadow-md hover:-translate-y-0.5'
+                                : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 hover:text-slate-900'
+                            }`}
+                    >
+                        {action}
+                    </button>
+                ))}
             </div>
         </div>
-    );
+    )
 }

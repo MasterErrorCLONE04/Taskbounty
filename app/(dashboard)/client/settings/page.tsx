@@ -12,7 +12,7 @@ export default async function SettingsPage() {
     // Fetch profile data
     const { data: profile } = await supabase
         .from('users')
-        .select('name, bio, skills, avatar_url')
+        .select('name, bio, skills, avatar_url, is_verified, verified_until')
         .eq('id', user.id)
         .single();
 
