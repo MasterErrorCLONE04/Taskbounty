@@ -229,3 +229,43 @@ export async function getAssignedTasks(filter: 'active' | 'history' = 'active') 
 
     return tasks || []
 }
+
+/**
+ * Get all OPEN tasks with optional search and category filters
+ */
+export async function getTasks(options: { search?: string, category?: string } = {}) {
+    try {
+        const supabase = await createClient()
+
+        let query = supabase
+            .from('tasks')
+            .select(`
+                *,
+                client:users!client_id(id, name, avatar_url, bio, rating),
+                likes(count),
+                comments(count)
+            `)
+            .eq('status', 'OPEN')
+            .order('created_at', { ascending: false })
+
+        if (options.category && options.category !== 'All') {
+            query = query.eq('category', options.category)
+        }
+
+        if (options.search) {
+            query = query.or(`title.ilike.%${options.search}%,description.ilike.%${options.search}%`)
+        }
+
+        const { data: tasks, error } = await query
+
+        if (error) {
+            console.error('Supabase Error in getTasks:', error.message)
+            return []
+        }
+
+        return tasks || []
+    } catch (err: any) {
+        console.error('Unexpected Error in getTasks:', err)
+        return []
+    }
+}

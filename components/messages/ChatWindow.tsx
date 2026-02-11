@@ -6,11 +6,15 @@ import { format } from 'date-fns'
 interface ChatWindowProps {
     conversation: any
     currentUserId?: string
+    isOtherUserOnline?: boolean
+    isOtherUserTyping?: boolean
+    onTypingChange?: (isTyping: boolean) => void
 }
 
-export function ChatWindow({ conversation, currentUserId }: ChatWindowProps) {
+export function ChatWindow({ conversation, currentUserId, isOtherUserOnline, isOtherUserTyping, onTypingChange }: ChatWindowProps) {
     const [messages, setMessages] = useState<any[]>([])
     const [newMessage, setNewMessage] = useState('')
+    const [isTypingLocal, setIsTypingLocal] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
     const [isSending, setIsSending] = useState(false)
     const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -71,8 +75,26 @@ export function ChatWindow({ conversation, currentUserId }: ChatWindowProps) {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault()
             handleSendMessage()
+            // Immediately stop typing indicator on send
+            if (isTypingLocal) {
+                setIsTypingLocal(false)
+                onTypingChange?.(false)
+            }
         }
     }
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        const val = e.target.value
+        setNewMessage(val)
+
+        const isTyping = val.length > 0
+        if (isTyping !== isTypingLocal) {
+            setIsTypingLocal(isTyping)
+            onTypingChange?.(isTyping)
+        }
+    }
+
+    // No useEffect needed for timeout anymore
 
     if (!conversation) return null
 
@@ -87,11 +109,19 @@ export function ChatWindow({ conversation, currentUserId }: ChatWindowProps) {
                             alt={otherUser?.name}
                             className="w-10 h-10 rounded-full object-cover"
                         />
-                        <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
+                        <div className={`absolute bottom-0 right-0 w-3 h-3 border-2 border-white rounded-full ${isOtherUserOnline ? 'bg-green-500' : 'bg-slate-300'}`}></div>
                     </div>
                     <div>
                         <h2 className="font-bold text-slate-900 leading-none">{otherUser?.name}</h2>
-                        <p className="text-[12px] text-slate-400 font-medium mt-1">● Online</p>
+                        {isOtherUserTyping ? (
+                            <p className="text-[12px] text-blue-500 font-bold mt-1 animate-pulse">
+                                Escribiendo...
+                            </p>
+                        ) : (
+                            <p className={`text-[12px] font-medium mt-1 ${isOtherUserOnline ? 'text-green-500' : 'text-slate-400'}`}>
+                                ● {isOtherUserOnline ? 'Online' : 'Offline'}
+                            </p>
+                        )}
                     </div>
                 </div>
                 <button className="p-2 text-blue-500 hover:bg-blue-50 rounded-full transition-all">
@@ -116,8 +146,8 @@ export function ChatWindow({ conversation, currentUserId }: ChatWindowProps) {
                         return (
                             <div key={msg.id} className={`flex flex-col gap-1 items-${isMe ? 'end ml-auto' : 'start'} max-w-lg`}>
                                 <div className={`p-4 rounded-2xl text-[14px] leading-relaxed shadow-sm ${isMe
-                                        ? 'bg-blue-500 text-white rounded-tr-none'
-                                        : 'bg-slate-100 text-slate-800 rounded-tl-none'
+                                    ? 'bg-blue-500 text-white rounded-tr-none'
+                                    : 'bg-slate-100 text-slate-800 rounded-tl-none'
                                     }`}>
                                     {msg.content}
                                 </div>
@@ -136,7 +166,7 @@ export function ChatWindow({ conversation, currentUserId }: ChatWindowProps) {
                 <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4">
                     <textarea
                         value={newMessage}
-                        onChange={(e) => setNewMessage(e.target.value)}
+                        onChange={handleInputChange}
                         onKeyDown={handleKeyDown}
                         placeholder="Start a new message"
                         className="w-full bg-transparent border-none focus:ring-0 text-[14px] text-slate-700 resize-none min-h-[60px] outline-none"

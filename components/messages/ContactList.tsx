@@ -7,15 +7,17 @@ interface Contact {
     lastMessage: string
     time: string
     isActive?: boolean
+    otherUserId?: string
 }
 
 interface ContactListProps {
     contacts: Contact[]
     activeId?: string
     onSelect?: (id: string) => void
+    onlineUsers?: Set<string>
 }
 
-export function ContactList({ contacts, activeId, onSelect }: ContactListProps) {
+export function ContactList({ contacts, activeId, onSelect, onlineUsers = new Set() }: ContactListProps) {
     return (
         <div className="w-full md:w-[380px] border-r border-slate-100 flex flex-col bg-white h-full">
             <div className="p-6 pb-4">
@@ -46,7 +48,12 @@ export function ContactList({ contacts, activeId, onSelect }: ContactListProps) 
                             className={`p-4 flex gap-3 cursor-pointer border-l-4 transition-all hover:bg-slate-50 ${contact.id === activeId || contact.isActive ? 'border-blue-500 bg-slate-50' : 'border-transparent'
                                 }`}
                         >
-                            <img src={contact.avatar} alt={contact.name} className="w-12 h-12 rounded-full object-cover" />
+                            <div className="relative">
+                                <img src={contact.avatar} alt={contact.name} className="w-12 h-12 rounded-full object-cover" />
+                                {contact.otherUserId && onlineUsers.has(contact.otherUserId) && (
+                                    <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
+                                )}
+                            </div>
                             <div className="flex-1 overflow-hidden">
                                 <div className="flex justify-between items-baseline mb-0.5">
                                     <h3 className="font-bold text-[14px] text-slate-900 truncate">{contact.name}</h3>

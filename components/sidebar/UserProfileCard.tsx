@@ -26,7 +26,7 @@ export function UserProfileCard({ user }: { user: any }) {
                 <img
                     src={avatarUrl}
                     alt="Avatar"
-                    className="w-20 h-20 rounded-full border-4 border-white absolute -bottom-10 left-4 shadow-sm"
+                    className="w-20 h-20 rounded-full border-4 border-white absolute -bottom-10 left-4 shadow-sm object-cover"
                 />
             </div>
             <div className="px-1">
