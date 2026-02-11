@@ -25,9 +25,11 @@ interface RightSidebarProps {
     user?: any
     balance?: any
     collaborators?: any[]
+    suggestedBounties?: any[]
+    whoToFollow?: any[]
 }
 
-export function RightSidebar({ user, balance, collaborators }: RightSidebarProps) {
+export function RightSidebar({ user, balance, collaborators, suggestedBounties, whoToFollow }: RightSidebarProps) {
     const pathname = usePathname()
     const isTasksPage = pathname === '/tasks'
     const isNotificationsPage = pathname === '/notifications'
@@ -67,8 +69,8 @@ export function RightSidebar({ user, balance, collaborators }: RightSidebarProps
                             <QuickStatsCard />
                         ) : isNotificationsPage ? (
                             <>
-                                <SuggestedBountiesCard />
-                                <WhoToFollowCard />
+                                <SuggestedBountiesCard bounties={suggestedBounties} />
+                                <WhoToFollowCard users={whoToFollow} />
                             </>
                         ) : isProfilePage ? (
                             <>
@@ -79,6 +81,7 @@ export function RightSidebar({ user, balance, collaborators }: RightSidebarProps
                         ) : (
                             <>
                                 <AccountOverviewCard balance={balance} />
+                                <SuggestedBountiesCard bounties={suggestedBounties} />
                                 <TopEarnersCard />
                                 <TrendingSkillsCard />
                             </>

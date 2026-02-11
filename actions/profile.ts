@@ -144,9 +144,25 @@ export async function getRightSidebarData() {
         .order('rating', { ascending: false })
         .limit(3)
 
+    const { data: suggestedBounties } = await supabase
+        .from('tasks')
+        .select('id, title, bounty_amount, category, currency')
+        .eq('status', 'OPEN')
+        .order('created_at', { ascending: false })
+        .limit(3)
+
+    // 4. Who to Follow (Randomized or popular users excluding self)
+    const { data: whoToFollow } = await supabase
+        .from('users')
+        .select('id, name, avatar_url, email')
+        .neq('id', user.id)
+        .limit(3)
+
     return {
         balance: balance || { available_balance: 0, pending_balance: 0 },
-        collaborators: collaborators || []
+        collaborators: collaborators || [],
+        suggestedBounties: suggestedBounties || [],
+        whoToFollow: whoToFollow || []
     }
 }
 

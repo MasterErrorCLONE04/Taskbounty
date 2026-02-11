@@ -47,6 +47,8 @@ export default async function ProfilePage() {
                         user={user}
                         balance={sidebarData?.balance}
                         collaborators={sidebarData?.collaborators}
+                        suggestedBounties={sidebarData?.suggestedBounties}
+                        whoToFollow={sidebarData?.whoToFollow}
                     />
                 </div>
             </div>

@@ -19,6 +19,8 @@ export function MessagesInterface({ initialConversations, currentUserId }: Messa
     const activeId = searchParams.get('id')
 
     const [conversations, setConversations] = useState(initialConversations)
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
+    const [isChatFullWidth, setIsChatFullWidth] = useState(false)
     const { onlineUsers, typingUsers, setTyping } = usePresence(currentUserId, activeId || undefined)
 
     // Derived active conversation
@@ -39,16 +41,23 @@ export function MessagesInterface({ initialConversations, currentUserId }: Messa
         const params = new URLSearchParams(searchParams)
         params.set('id', id)
         router.push(`${pathname}?${params.toString()}`)
+        // If we were in empty state and select someone, maybe we don't want to hide sidebar? 
+        // User hasn't specified auto-hiding, so let's keep it manual.
     }
 
     return (
-        <div className="flex h-full bg-white overflow-hidden">
-            <ContactList
-                contacts={contacts}
-                activeId={activeId || undefined}
-                onSelect={handleSelectContact}
-                onlineUsers={onlineUsers}
-            />
+        <div className="flex h-full bg-white overflow-hidden relative">
+            {!isChatFullWidth && (
+                <ContactList
+                    contacts={contacts}
+                    activeId={activeId || undefined}
+                    onSelect={handleSelectContact}
+                    onlineUsers={onlineUsers}
+                    isCollapsed={isSidebarCollapsed}
+                    onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                />
+            )}
+
             {activeId && activeConversation ? (
                 <ChatWindow
                     conversation={activeConversation}
@@ -56,10 +65,20 @@ export function MessagesInterface({ initialConversations, currentUserId }: Messa
                     isOtherUserOnline={onlineUsers.has(activeConversation.otherUser?.id)}
                     isOtherUserTyping={typingUsers.has(activeConversation.otherUser?.id)}
                     onTypingChange={setTyping}
+                    isFullWidth={isChatFullWidth}
+                    onToggleFullWidth={() => setIsChatFullWidth(!isChatFullWidth)}
                 />
             ) : (
                 <div className="flex-1 flex flex-col items-center justify-center bg-slate-50 text-slate-400">
                     <p>Select a conversation to start chatting</p>
+                    {isChatFullWidth && (
+                        <button
+                            onClick={() => setIsChatFullWidth(false)}
+                            className="mt-4 text-blue-500 font-bold hover:underline"
+                        >
+                            Show conversation list
+                        </button>
+                    )}
                 </div>
             )}
         </div>

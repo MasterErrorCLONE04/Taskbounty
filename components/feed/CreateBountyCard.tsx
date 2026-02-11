@@ -47,8 +47,8 @@ export function CreateBountyCard({ user }: CreateBountyCardProps) {
         <div className="p-4 border-b border-slate-100 bg-white mb-6">
             <div className="flex gap-4">
                 <Avatar
-                    src={user.user_metadata?.avatar_url}
-                    fallback={user.user_metadata?.name?.[0] || 'U'}
+                    src={user.avatar_url || user.user_metadata?.avatar_url}
+                    fallback={user.name?.[0] || user.user_metadata?.name?.[0] || 'U'}
                     className="w-12 h-12 flex-shrink-0 border border-slate-100"
                 />
                 <div className="flex-1 space-y-3">

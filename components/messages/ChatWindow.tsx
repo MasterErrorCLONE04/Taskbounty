@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
-import { Info, Paperclip, Banknote, Smile, Send } from 'lucide-react'
+import { Info, Paperclip, Banknote, Smile, Send, Maximize2, Minimize2 } from 'lucide-react'
 import { getDirectMessages, sendDirectMessage } from '@/actions/messages'
 import { format } from 'date-fns'
+import { supabase } from '@/lib/supabase/client'
 
 interface ChatWindowProps {
     conversation: any
@@ -9,9 +10,19 @@ interface ChatWindowProps {
     isOtherUserOnline?: boolean
     isOtherUserTyping?: boolean
     onTypingChange?: (isTyping: boolean) => void
+    isFullWidth?: boolean
+    onToggleFullWidth?: () => void
 }
 
-export function ChatWindow({ conversation, currentUserId, isOtherUserOnline, isOtherUserTyping, onTypingChange }: ChatWindowProps) {
+export function ChatWindow({
+    conversation,
+    currentUserId,
+    isOtherUserOnline,
+    isOtherUserTyping,
+    onTypingChange,
+    isFullWidth = false,
+    onToggleFullWidth
+}: ChatWindowProps) {
     const [messages, setMessages] = useState<any[]>([])
     const [newMessage, setNewMessage] = useState('')
     const [isTypingLocal, setIsTypingLocal] = useState(false)
@@ -37,7 +48,41 @@ export function ChatWindow({ conversation, currentUserId, isOtherUserOnline, isO
             })
             .catch(console.error)
 
-    }, [conversation.id])
+        // Real-time Subscription
+        const channel = supabase.channel(`direct_messages:${conversation.id}`)
+            .on(
+                'postgres_changes',
+                {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'direct_messages',
+                    filter: `conversation_id=eq.${conversation.id}`
+                },
+                (payload) => {
+                    const newMessage = payload.new
+                    // Avoid duplicate if we already added it optimistically (check by sender or some temp ID if we had one)
+                    // Since optimistic message has ID start with 'temp-', we should replace it or ignore if it's the same content?
+                    // Better approach: Just append if sender is NOT me. 
+                    // If sender IS me, we theoretically already have it. 
+                    // But to be safe and get the real ID, we could replace the temp one.
+
+                    if (newMessage.sender_id !== currentUserId) {
+                        setMessages(prev => [...prev, newMessage])
+                        setTimeout(scrollToBottom, 100)
+                    } else {
+                        // Optional: Replace temp message with real one to get correct ID/timestamp
+                        setMessages(prev => prev.map(m =>
+                            (m.isTemp && m.content === newMessage.content) ? newMessage : m
+                        ))
+                    }
+                }
+            )
+            .subscribe()
+
+        return () => {
+            supabase.removeChannel(channel)
+        }
+    }, [conversation.id, currentUserId])
 
     const handleSendMessage = async () => {
         if (!newMessage.trim() || !conversation?.id || isSending) return
@@ -124,9 +169,18 @@ export function ChatWindow({ conversation, currentUserId, isOtherUserOnline, isO
                         )}
                     </div>
                 </div>
-                <button className="p-2 text-blue-500 hover:bg-blue-50 rounded-full transition-all">
-                    <Info size={20} />
-                </button>
+                <div className="flex items-center gap-1">
+                    <button
+                        onClick={onToggleFullWidth}
+                        className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-full transition-all"
+                        title={isFullWidth ? "Exit full width" : "Full width chat"}
+                    >
+                        {isFullWidth ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
+                    </button>
+                    <button className="p-2 text-blue-500 hover:bg-blue-50 rounded-full transition-all">
+                        <Info size={20} />
+                    </button>
+                </div>
             </div>
 
             {/* Message Feed */}

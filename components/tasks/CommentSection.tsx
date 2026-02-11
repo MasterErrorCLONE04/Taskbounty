@@ -41,8 +41,8 @@ export function CommentSection({ taskId, initialComments, currentUser, minimal =
             created_at: new Date().toISOString(),
             user: {
                 id: currentUser.id,
-                name: currentUser.name || 'You',
-                avatar_url: currentUser.avatar_url || ''
+                name: currentUser.name || currentUser.user_metadata?.name || 'You',
+                avatar_url: currentUser.avatar_url || currentUser.user_metadata?.avatar_url || ''
             }
         }
 
@@ -74,8 +74,8 @@ export function CommentSection({ taskId, initialComments, currentUser, minimal =
             {minimal && currentUser && (
                 <div className="flex gap-3 items-start mb-6">
                     <img
-                        src={currentUser.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.name)}&background=random`}
-                        alt={currentUser.name}
+                        src={currentUser.avatar_url || currentUser.user_metadata?.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.name || currentUser.user_metadata?.name || 'U')}&background=random`}
+                        alt={currentUser.name || currentUser.user_metadata?.name || 'User'}
                         className="w-8 h-8 rounded-full bg-slate-100 object-cover"
                     />
                     <form onSubmit={handleSubmit} className="flex-1 relative">
@@ -132,8 +132,8 @@ export function CommentSection({ taskId, initialComments, currentUser, minimal =
             {!minimal && currentUser ? (
                 <div className="flex gap-4 items-start">
                     <img
-                        src={currentUser.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.name)}&background=random`}
-                        alt={currentUser.name}
+                        src={currentUser.avatar_url || currentUser.user_metadata?.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.name || currentUser.user_metadata?.name || 'U')}&background=random`}
+                        alt={currentUser.name || currentUser.user_metadata?.name || 'User'}
                         className="w-10 h-10 rounded-full bg-slate-100 object-cover"
                     />
                     <form onSubmit={handleSubmit} className="flex-1 relative">
