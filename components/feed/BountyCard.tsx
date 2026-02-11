@@ -8,6 +8,7 @@ import { useState, useRef } from "react"
 import { toggleLike, getComments } from "@/actions/social"
 import { useRouter } from "next/navigation"
 import { CommentSection } from "@/components/tasks/CommentSection"
+import { useAuthModal } from "@/components/auth/AuthModalContext"
 
 interface BountyCardProps {
     task: any
@@ -16,6 +17,7 @@ interface BountyCardProps {
 
 export function BountyCard({ task, currentUser }: BountyCardProps) {
     const router = useRouter()
+    const { openLogin } = useAuthModal()
     const [isLiked, setIsLiked] = useState(task.is_liked || false)
     const [likesCount, setLikesCount] = useState(task.likes_count || 0)
     const [isLikeLoading, setIsLikeLoading] = useState(false)
@@ -62,7 +64,12 @@ export function BountyCard({ task, currentUser }: BountyCardProps) {
                 // Revert
                 setIsLiked(!newIsLiked)
                 setLikesCount((prev: number) => !newIsLiked ? prev + 1 : prev - 1)
-                console.error('Like failed:', error)
+
+                if (error === 'Not authenticated') {
+                    openLogin()
+                } else {
+                    console.error('Like failed:', error)
+                }
             }
         } catch (err) {
             console.error('Like error:', err)

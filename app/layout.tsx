@@ -17,6 +17,8 @@ export const metadata: Metadata = {
   description: "Secure and transparent task marketplace with escrow protection.",
 };
 
+import { AuthModalProvider } from "@/components/auth/AuthModalContext";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -27,7 +29,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <AuthModalProvider>
+          {children}
+        </AuthModalProvider>
       </body>
     </html>
   );

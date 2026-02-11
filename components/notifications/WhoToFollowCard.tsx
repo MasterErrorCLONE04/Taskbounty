@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/Button"
 import { followUser } from '@/actions/social'
 import Link from 'next/link'
 import { Avatar } from '@/components/ui/Avatar'
+import { useAuthModal } from '@/components/auth/AuthModalContext'
 
 interface WhoToFollowCardProps {
     users?: any[]
@@ -12,6 +13,7 @@ interface WhoToFollowCardProps {
 export function WhoToFollowCard({ users }: WhoToFollowCardProps) {
     const [followingIds, setFollowingIds] = useState<string[]>([])
     const [loadingIds, setLoadingIds] = useState<string[]>([])
+    const { openLogin } = useAuthModal()
 
     const displayUsers = users || []
 
@@ -21,6 +23,8 @@ export function WhoToFollowCard({ users }: WhoToFollowCardProps) {
             const result = await followUser(userId)
             if (result.success) {
                 setFollowingIds(prev => [...prev, userId])
+            } else if (result.error === 'Not authenticated') {
+                openLogin()
             }
         } catch (error) {
             console.error('Follow error:', error)
@@ -61,8 +65,8 @@ export function WhoToFollowCard({ users }: WhoToFollowCardProps) {
                                 onClick={() => !isFollowing && handleFollow(userToFollow.id)}
                                 disabled={isFollowing || isLoading}
                                 className={`rounded-full text-[11px] font-bold px-4 h-7 transition-all ${isFollowing
-                                        ? 'bg-slate-100 text-slate-500 cursor-default hover:bg-slate-100'
-                                        : 'bg-slate-900 text-white hover:bg-slate-800 active:scale-95'
+                                    ? 'bg-slate-100 text-slate-500 cursor-default hover:bg-slate-100'
+                                    : 'bg-slate-900 text-white hover:bg-slate-800 active:scale-95'
                                     }`}
                             >
                                 {isLoading ? '...' : isFollowing ? 'FOLLOWED' : 'FOLLOW'}
