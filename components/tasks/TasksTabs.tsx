@@ -2,14 +2,15 @@
 interface TasksTabsProps {
     activeTab: string
     onTabChange: (tab: string) => void
+    counts?: { [key: string]: number }
 }
 
-export function TasksTabs({ activeTab, onTabChange }: TasksTabsProps) {
+export function TasksTabs({ activeTab, onTabChange, counts }: TasksTabsProps) {
     const tabs = [
-        { name: 'Active', count: 3 },
-        { name: 'Pending', count: 1 },
-        { name: 'Completed', count: 12 },
-        { name: 'Disputed', count: 0 }
+        { name: 'Active', count: counts?.['Active'] || 0 },
+        { name: 'Pending', count: counts?.['Pending'] || 0 },
+        { name: 'Completed', count: counts?.['Completed'] || 0 },
+        { name: 'Disputed', count: counts?.['Disputed'] || 0 }
     ]
 
     return (

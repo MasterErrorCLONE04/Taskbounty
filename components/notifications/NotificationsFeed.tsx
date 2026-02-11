@@ -1,62 +1,75 @@
-
 "use client"
 
 import { useState } from 'react'
-import { CheckCircle2, CreditCard, Star, Megaphone } from 'lucide-react'
+import { CheckCircle2, CreditCard, Star, Megaphone, UserPlus, Bell, Heart, MessageCircle } from 'lucide-react'
+import { formatDistanceToNow } from 'date-fns'
 import { NotificationsHeader } from "@/components/notifications/NotificationsHeader"
 import { NotificationsTabs } from "@/components/notifications/NotificationsTabs"
 import { NotificationItem, Notification } from "@/components/notifications/NotificationItem"
+import { markAsRead } from '@/actions/notifications'
+import { useRouter } from 'next/navigation'
 
-export function NotificationsFeed() {
+interface NotificationsFeedProps {
+    initialNotifications?: any[]
+}
+
+export function NotificationsFeed({ initialNotifications = [] }: NotificationsFeedProps) {
+    const router = useRouter()
     const [activeTab, setActiveTab] = useState('All')
+    const [notifications, setNotifications] = useState<any[]>(initialNotifications)
 
-    const notifications: Notification[] = [
-        {
-            id: 1,
-            type: 'proposal',
-            user: { name: 'Marcus Chen', avatar: 'https://ui-avatars.com/api/?name=Marcus+Chen&background=random' },
-            content: 'accepted your proposal for <span class="text-blue-500 cursor-pointer hover:underline font-bold">React Architect</span>. You can now start the work.',
-            time: '2m ago',
-            unread: true,
-            icon: <CheckCircle2 size={16} className="text-white" />,
-            iconBg: 'bg-green-500'
-        },
-        {
-            id: 2,
-            type: 'offer',
-            user: { name: 'Sarah Johnson', avatar: 'https://ui-avatars.com/api/?name=Sarah+Johnson&background=random' },
-            content: 'You received a direct offer of <span class="font-bold text-slate-900">$250 USDC</span> from <span class="font-bold text-slate-900">Sarah Johnson</span> for a private consulting session.',
-            time: '45m ago',
-            unread: true,
-            hasActions: true,
-            icon: <CreditCard size={16} className="text-white" />,
-            iconBg: 'bg-blue-500'
-        },
-        {
-            id: 3,
-            type: 'milestone',
-            content: '<span class="font-bold text-slate-900">Reputation milestone:</span> You reached <span class="text-orange-500 font-bold">4.98!</span> This puts you in the top 2% of developers this month.',
-            time: '3h ago',
-            icon: <Star size={16} className="text-white" />,
-            iconBg: 'bg-yellow-500'
-        },
-        {
-            id: 4,
-            type: 'match',
-            content: 'A new bounty matching your skills was posted: <span class="font-bold text-slate-900">Rust Backend Optimization</span> ($800 USDC).',
-            time: '5h ago',
-            icon: <Megaphone size={16} className="text-white" />,
-            iconBg: 'bg-slate-200'
-        },
-        {
-            id: 5,
-            type: 'comment',
-            user: { name: 'David Wu', avatar: 'https://ui-avatars.com/api/?name=David+Wu&background=random' },
-            content: '<span class="font-bold text-slate-900">David Wu</span> mentioned you in a comment: "@alex_rivest could you take a look at the PR for the dashboard?"',
-            quote: '"Excellent work on the previous module, I think you\'re the best fit for this..."',
-            time: 'Yesterday',
+    // Helper to map icon based on type
+    const getIcon = (type: string) => {
+        switch (type) {
+            case 'follow': return <UserPlus size={16} className="text-white" />
+            case 'bounty_posted': return <Megaphone size={16} className="text-white" />
+            case 'application': return <CreditCard size={16} className="text-white" />
+            case 'message': return <CheckCircle2 size={16} className="text-white" />
+            case 'like': return <Heart size={16} className="text-white" />
+            case 'comment': return <MessageCircle size={16} className="text-white" />
+            default: return <Bell size={16} className="text-white" />
         }
-    ]
+    }
+
+    const getIconBg = (type: string) => {
+        switch (type) {
+            case 'follow': return 'bg-blue-500'
+            case 'bounty_posted': return 'bg-purple-500'
+            case 'application': return 'bg-green-500'
+            case 'like': return 'bg-red-500'
+            case 'comment': return 'bg-orange-500'
+            default: return 'bg-slate-400'
+        }
+    }
+
+    const mappedNotifications: Notification[] = notifications.map(n => ({
+        id: n.id,
+        type: n.type,
+        // We don't have user object in notification table currently, so we extract from message or use generic
+        // Improvement: Store actor_id in notifications table
+        content: `<span class="font-bold text-slate-900">${n.title}</span>: ${n.message}`,
+        time: n.created_at ? formatDistanceToNow(new Date(n.created_at), { addSuffix: true }) : 'Just now',
+        unread: !n.read,
+        icon: getIcon(n.type),
+        iconBg: getIconBg(n.type),
+        link: n.link
+    }))
+
+    const handleNotificationClick = async (id: string | number, link?: string) => {
+        // Mark as read
+        await markAsRead(id.toString())
+
+        // Update local state
+        setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n))
+
+        if (link) {
+            router.push(link)
+        }
+    }
+
+    const filteredNotifications = activeTab === 'All'
+        ? mappedNotifications
+        : mappedNotifications.filter(n => !n.unread) // Mock logic for tabs, adjust as needed
 
     return (
         <div className="flex flex-col min-h-full pb-20">
@@ -64,14 +77,24 @@ export function NotificationsFeed() {
             <NotificationsTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
             <div className="flex-1">
-                {notifications.map((notif) => (
-                    <NotificationItem key={notif.id} notif={notif} />
-                ))}
+                {mappedNotifications.length > 0 ? (
+                    mappedNotifications.map((notif) => (
+                        <div key={notif.id} onClick={() => handleNotificationClick(notif.id, (notif as any).link)} className="cursor-pointer">
+                            <NotificationItem notif={notif} />
+                        </div>
+                    ))
+                ) : (
+                    <div className="p-12 text-center text-slate-400 font-medium text-[14px]">
+                        No notifications yet.
+                    </div>
+                )}
             </div>
 
-            <div className="p-12 text-center text-slate-400 font-medium text-[14px]">
-                You're all caught up!
-            </div>
+            {mappedNotifications.length > 0 && (
+                <div className="p-12 text-center text-slate-400 font-medium text-[14px]">
+                    That's all for now!
+                </div>
+            )}
         </div>
     )
 }

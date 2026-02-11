@@ -23,9 +23,11 @@ import { TopCollaboratorsCard } from "@/components/profile/TopCollaboratorsCard"
 
 interface RightSidebarProps {
     user?: any
+    balance?: any
+    collaborators?: any[]
 }
 
-export function RightSidebar({ user }: RightSidebarProps) {
+export function RightSidebar({ user, balance, collaborators }: RightSidebarProps) {
     const pathname = usePathname()
     const isTasksPage = pathname === '/tasks'
     const isNotificationsPage = pathname === '/notifications'
@@ -59,7 +61,7 @@ export function RightSidebar({ user }: RightSidebarProps) {
 
                 {user ? (
                     <>
-                        <AccountOverviewCard />
+                        {isProfilePage && <AccountOverviewCard balance={balance} />}
 
                         {isTasksPage ? (
                             <QuickStatsCard />
@@ -71,11 +73,12 @@ export function RightSidebar({ user }: RightSidebarProps) {
                         ) : isProfilePage ? (
                             <>
                                 <VerifiedSkillsCard skills={user?.skills} />
-                                <CertificationsCard />
-                                <TopCollaboratorsCard />
+                                <CertificationsCard certifications={user?.certifications} />
+                                <TopCollaboratorsCard collaborators={collaborators} />
                             </>
                         ) : (
                             <>
+                                <AccountOverviewCard balance={balance} />
                                 <TopEarnersCard />
                                 <TrendingSkillsCard />
                             </>

@@ -56,6 +56,11 @@ export async function updateProfile(formData: FormData) {
         location,
         website,
         skills,
+        summary: formData.get('summary') as string,
+        portfolio: formData.get('portfolio') ? JSON.parse(formData.get('portfolio') as string) : [],
+        certifications: formData.get('certifications') ? JSON.parse(formData.get('certifications') as string) : [],
+        experience: formData.get('experience') ? JSON.parse(formData.get('experience') as string) : [],
+        education: formData.get('education') ? JSON.parse(formData.get('education') as string) : [],
         updated_at: new Date().toISOString(),
     }
 
@@ -116,4 +121,92 @@ export async function updateProfile(formData: FormData) {
 
     revalidatePath('/profile')
     return { success: true }
+}
+
+export async function getRightSidebarData() {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) return null
+
+    // 1. Fetch Balance
+    const { data: balance } = await supabase
+        .from('balances')
+        .select('*')
+        .eq('user_id', user.id)
+        .single()
+
+    // 2. Fetch Top Collaborators (Mock logic: Users with highest rating, excluding self)
+    const { data: collaborators } = await supabase
+        .from('users')
+        .select('id, name, bio, avatar_url, rating')
+        .neq('id', user.id)
+        .order('rating', { ascending: false })
+        .limit(3)
+
+    return {
+        balance: balance || { available_balance: 0, pending_balance: 0 },
+        collaborators: collaborators || []
+    }
+}
+
+export async function getUserBounties(userId: string) {
+    const supabase = await createClient()
+
+    const { data: bounties, error } = await supabase
+        .from('tasks')
+        .select('*')
+        .eq('client_id', userId)
+        .neq('status', 'DRAFT')
+        .order('created_at', { ascending: false })
+
+    if (error) {
+        console.error('Error fetching user bounties:', error)
+        return []
+    }
+
+    return bounties
+}
+
+export async function getUserReviews(userId: string) {
+    const supabase = await createClient()
+
+    const { data: reviews, error } = await supabase
+        .from('reviews')
+        .select(`
+            *,
+            reviewer:reviewer_id (
+                id,
+                name,
+                avatar_url
+            )
+        `)
+        .eq('target_id', userId)
+        .order('created_at', { ascending: false })
+
+    if (error) {
+        console.error('Error fetching user reviews:', error)
+        return []
+    }
+
+    return reviews
+}
+
+export async function searchUsers(query: string) {
+    const supabase = await createClient()
+
+    if (!query || query.length < 2) return []
+
+    const { data: users, error } = await supabase
+        .from('users')
+        .select('id, name, avatar_url, bio')
+        .ilike('name', `%${query}%`)
+        .limit(5)
+
+    if (error) {
+        console.error('Error searching users:', error)
+        return []
+    }
+
+    return users
 }

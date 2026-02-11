@@ -37,9 +37,14 @@ export function UserMenuDropdown({ user }: UserMenuDropdownProps) {
         router.refresh()
     }
 
+    // Get user details (support both DB Profile and Auth User structure)
+    const avatarUrl = user.avatar_url || user.user_metadata?.avatar_url
+    const name = user.full_name || user.name || user.user_metadata?.name || 'User'
+    const email = user.email || (user.user_metadata?.email) // Auth User has email at top level usually
+
     // Get user initials for fallback
-    const initials = user.user_metadata?.name
-        ? user.user_metadata.name.split(' ').map((n: string) => n[0]).join('').toUpperCase().substring(0, 2)
+    const initials = name
+        ? name.split(' ').map((n: string) => n[0]).join('').toUpperCase().substring(0, 2)
         : 'U'
 
     return (
@@ -49,7 +54,7 @@ export function UserMenuDropdown({ user }: UserMenuDropdownProps) {
                 onClick={toggleDropdown}
             >
                 <Avatar
-                    src={user.user_metadata?.avatar_url}
+                    src={avatarUrl}
                     fallback={initials}
                     className="w-8 h-8 border border-slate-200"
                 />
@@ -63,10 +68,10 @@ export function UserMenuDropdown({ user }: UserMenuDropdownProps) {
                 <div className="absolute top-[calc(100%-8px)] right-2 w-56 bg-white rounded-xl shadow-lg border border-slate-100 py-2 z-50 animate-in fade-in zoom-in-95 duration-100">
                     <div className="px-4 py-3 border-b border-slate-50 mb-1">
                         <p className="text-sm font-bold text-slate-900 truncate">
-                            {user.user_metadata?.name || 'User'}
+                            {name}
                         </p>
                         <p className="text-xs text-slate-500 truncate">
-                            {user.email}
+                            {email}
                         </p>
                     </div>
 

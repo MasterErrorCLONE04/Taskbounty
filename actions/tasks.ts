@@ -109,23 +109,49 @@ export async function createTaskWithEscrow(formData: {
 export async function getRecentOpenTasks() {
     try {
         const supabase = await createClient()
+        const { data: { user } } = await supabase.auth.getUser()
 
         const { data: tasks, error } = await supabase
             .from('tasks')
             .select(`
                 *,
-                client:users!client_id(name, avatar_url, bio)
+                client:users!client_id(id, name, avatar_url, bio),
+                likes(count),
+                comments(count)
             `)
             .eq('status', 'OPEN')
             .order('created_at', { ascending: false })
-            .limit(4)
+            .limit(10) // Increased limit slightly
 
         if (error) {
-            console.error('Supabase Error in getRecentOpenTasks:', error.message, error.details, error.hint)
+            console.error('Supabase Error in getRecentOpenTasks:', error.message)
             return []
         }
 
-        return tasks || []
+        // If user is logged in, check which tasks they liked
+        let likedMap: Record<string, boolean> = {}
+        if (user && tasks && tasks.length > 0) {
+            const taskIds = tasks.map(t => t.id)
+            const { data: userLikes } = await supabase
+                .from('likes')
+                .select('task_id')
+                .eq('user_id', user.id)
+                .in('task_id', taskIds)
+
+            userLikes?.forEach(l => {
+                likedMap[l.task_id] = true
+            })
+        }
+
+        // Enriched tasks
+        const enrichedTasks = tasks?.map(t => ({
+            ...t,
+            likes_count: t.likes?.[0]?.count || 0,
+            comments_count: t.comments?.[0]?.count || 0,
+            is_liked: !!likedMap[t.id]
+        }))
+
+        return enrichedTasks || []
     } catch (err: any) {
         console.error('Unexpected Error in getRecentOpenTasks:', err)
         return []
@@ -167,4 +193,39 @@ export async function createDraftTask(description: string, bounty_amount: number
         console.error('Create Draft Error:', error)
         return { success: false, error: error.message }
     }
+}
+
+/**
+ * Get tasks assigned to the current user (Worker View)
+ */
+export async function getAssignedTasks(filter: 'active' | 'history' = 'active') {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) return []
+
+    let query = supabase
+        .from('tasks')
+        .select(`
+            *,
+            client:users!client_id(name, avatar_url),
+            files(count)
+        `)
+        .eq('assigned_worker_id', user.id)
+        .order('updated_at', { ascending: false })
+
+    if (filter === 'active') {
+        query = query.in('status', ['ASSIGNED', 'IN_PROGRESS', 'SUBMITTED', 'DISPUTED'])
+    } else if (filter === 'history') {
+        query = query.in('status', ['COMPLETED', 'CANCELLED'])
+    }
+
+    const { data: tasks, error } = await query
+
+    if (error) {
+        console.error('Error fetching assigned tasks:', error)
+        return []
+    }
+
+    return tasks || []
 }

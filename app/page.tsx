@@ -16,7 +16,7 @@ export default async function LandingPage() {
 
   return (
     <div className="h-screen bg-white flex flex-col overflow-hidden">
-      <TopNavbar user={profile || user} />
+      <TopNavbar user={user} profile={profile} />
 
       <div className="flex-1 flex justify-center overflow-hidden">
         {/* Left Sidebar - Navigation */}
@@ -28,7 +28,7 @@ export default async function LandingPage() {
 
           <div className="divide-y divide-slate-50 pb-20">
             {recentTasks?.map((task) => (
-              <BountyCard key={task.id} task={task as any} />
+              <BountyCard key={task.id} task={task as any} currentUser={profile || user} />
             ))}
 
             {(!recentTasks || recentTasks.length === 0) && (

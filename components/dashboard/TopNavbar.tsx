@@ -21,7 +21,7 @@ import {
 } from 'lucide-react'
 import { signOut } from '@/actions/auth'
 
-export default function TopNavbar({ user, onOpenAuth }: { user: any, onOpenAuth?: (view: 'login' | 'signup') => void }) {
+export default function TopNavbar({ user, profile, onOpenAuth }: { user: any, profile?: any, onOpenAuth?: (view: 'login' | 'signup') => void }) {
     const [isProfileOpen, setIsProfileOpen] = useState(false)
     const [isLangOpen, setIsLangOpen] = useState(false)
     const [currentLang, setCurrentLang] = useState('English (US)')
@@ -122,11 +122,11 @@ export default function TopNavbar({ user, onOpenAuth }: { user: any, onOpenAuth?
                                     className="flex flex-col items-center justify-center text-slate-500 hover:text-slate-900 h-full px-2"
                                 >
                                     <div className="w-6 h-6 rounded-full bg-slate-200 overflow-hidden mb-1 flex-shrink-0 border border-slate-100">
-                                        {user?.user_metadata?.avatar_url ? (
-                                            <img src={user.user_metadata.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                                        {profile?.avatar_url || user?.user_metadata?.avatar_url ? (
+                                            <img src={profile?.avatar_url || user.user_metadata.avatar_url} alt="Profile" className="w-full h-full object-cover" />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center bg-slate-100 text-[10px] font-black uppercase text-slate-400">
-                                                Me
+                                                {profile?.full_name?.[0] || user?.email?.[0] || 'Me'}
                                             </div>
                                         )}
                                     </div>
@@ -142,17 +142,17 @@ export default function TopNavbar({ user, onOpenAuth }: { user: any, onOpenAuth?
                                         <div className="p-4 border-b border-slate-100">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-12 h-12 rounded-full bg-slate-100 overflow-hidden border border-slate-200 flex-shrink-0">
-                                                    {user?.user_metadata?.avatar_url ? (
-                                                        <img src={user.user_metadata.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                                                    {profile?.avatar_url || user?.user_metadata?.avatar_url ? (
+                                                        <img src={profile?.avatar_url || user.user_metadata.avatar_url} alt="Profile" className="w-full h-full object-cover" />
                                                     ) : (
                                                         <div className="w-full h-full flex items-center justify-center bg-slate-100 text-xs font-black uppercase text-slate-400">
-                                                            {user?.email?.[0]}
+                                                            {profile?.full_name?.[0] || user?.email?.[0]}
                                                         </div>
                                                     )}
                                                 </div>
                                                 <div className="overflow-hidden">
                                                     <p className="font-bold text-slate-900 truncate">
-                                                        {user?.user_metadata?.name || user?.email?.split('@')[0]}
+                                                        {profile?.full_name || user?.user_metadata?.name || user?.email?.split('@')[0]}
                                                     </p>
                                                     <p className="text-[11px] text-slate-500 truncate">{user?.email}</p>
                                                 </div>

@@ -2,7 +2,7 @@
 import { CheckCircle2, CreditCard, Star, Megaphone } from 'lucide-react'
 
 export interface Notification {
-    id: number
+    id: string | number
     type: string
     user?: { name: string; avatar: string }
     content: string

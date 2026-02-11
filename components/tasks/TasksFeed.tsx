@@ -7,60 +7,42 @@ import { TasksFilter } from "@/components/tasks/TasksFilter"
 import { TasksTabs } from "@/components/tasks/TasksTabs"
 import { TaskCard, TaskItemProps } from "@/components/tasks/TaskCard"
 
-export function TasksFeed() {
+export function TasksFeed({ tasks = [] }: { tasks?: TaskItemProps[] }) {
     const [activeTab, setActiveTab] = useState('Active')
 
-    const tasks: TaskItemProps[] = [
-        {
-            id: 't1',
-            taskId: '#BT-9421',
-            status: 'IN PROGRESS',
-            title: 'Fix Redux Toolkit Persistence Issue',
-            personType: 'Client',
-            personName: 'Marcus Chen',
-            personAvatar: 'https://ui-avatars.com/api/?name=Marcus+Chen&background=random',
-            amount: 120.00,
-            currency: 'USDC',
-            escrowActive: true,
-            actions: ['Submit Work', 'Message Client']
-        },
-        {
-            id: 't2',
-            taskId: '#BT-8820',
-            status: 'REVIEWING',
-            title: '5 High-Fidelity Landing Page Mockups',
-            personType: 'Hunter',
-            personName: 'Sarah Johnson',
-            personAvatar: 'https://ui-avatars.com/api/?name=Sarah+Johnson&background=random',
-            amount: 450.00,
-            currency: 'USDC',
-            escrowActive: true,
-            actions: ['Release Funds', 'Request Revision']
-        },
-        {
-            id: 't3',
-            taskId: '#BT-9502',
-            status: 'ESCROW ACTIVE',
-            title: 'Solidity Smart Contract Audit',
-            personType: 'Client',
-            personName: 'Leo V.',
-            personAvatar: 'https://ui-avatars.com/api/?name=Leo+V&background=random',
-            amount: 1200.00,
-            currency: 'USDC',
-            escrowActive: true,
-            actions: ['Start Working', 'View Brief']
-        }
-    ]
+    // Mock data removed in favor of props
+    // Filter tasks based on activeTab
+    const filteredTasks = tasks.filter(task => {
+        const s = task.status;
+        if (activeTab === 'Active') return ['ASSIGNED', 'IN_PROGRESS', 'IN PROGRESS'].includes(s);
+        if (activeTab === 'Pending') return ['SUBMITTED', 'REVIEWING'].includes(s);
+        if (activeTab === 'Completed') return ['COMPLETED', 'ESCROW ACTIVE'].includes(s);
+        if (activeTab === 'Disputed') return ['DISPUTED'].includes(s);
+        return false;
+    });
+
+    const counts = {
+        'Active': tasks.filter(t => ['ASSIGNED', 'IN_PROGRESS', 'IN PROGRESS'].includes(t.status)).length,
+        'Pending': tasks.filter(t => ['SUBMITTED', 'REVIEWING'].includes(t.status)).length,
+        'Completed': tasks.filter(t => ['COMPLETED', 'ESCROW ACTIVE'].includes(t.status)).length,
+        'Disputed': tasks.filter(t => ['DISPUTED'].includes(t.status)).length
+    }
 
     return (
         <div className="flex flex-col min-h-full">
             <TasksHeader />
             <TasksFilter />
-            <TasksTabs activeTab={activeTab} onTabChange={setActiveTab} />
+            <TasksTabs activeTab={activeTab} onTabChange={setActiveTab} counts={counts} />
             <div className="flex flex-col pb-20">
-                {tasks.map((task) => (
-                    <TaskCard key={task.id} task={task} />
-                ))}
+                {filteredTasks.length === 0 ? (
+                    <div className="p-12 text-center text-slate-400 font-medium">
+                        No tasks found in this category.
+                    </div>
+                ) : (
+                    filteredTasks.map((task) => (
+                        <TaskCard key={task.id} task={task} />
+                    ))
+                )}
             </div>
         </div>
     )

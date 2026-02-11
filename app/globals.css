@@ -3,13 +3,13 @@
 :root {
   --background: #ffffff;
   --foreground: #020617;
-  --primary: #0ea5e9;
+  --primary: #00A7F4;
   --primary-foreground: #ffffff;
   --card: #ffffff;
   --card-foreground: #020617;
   --border: #f1f5f9;
   --input: #f1f5f9;
-  --ring: #0ea5e9;
+  --ring: #00A7F4;
   --radius: 1.5rem;
 }
 
@@ -24,6 +24,19 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
   --radius: var(--radius);
+
+  /* Brand Overrides - Based on #00A7F4 */
+  --color-blue-50: #effaff;
+  --color-blue-100: #dff4ff;
+  --color-blue-200: #b8eaff;
+  --color-blue-300: #7ddcff;
+  --color-blue-400: #33c6fa;
+  --color-blue-500: #00A7F4;
+  --color-blue-600: #008dc4;
+  --color-blue-700: #00709f;
+  --color-blue-800: #005f85;
+  --color-blue-900: #064e6d;
+  --color-blue-950: #043249;
 }
 
 @media (prefers-color-scheme: dark) {

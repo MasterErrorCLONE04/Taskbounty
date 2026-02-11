@@ -12,11 +12,15 @@ import { UserMenuDropdown } from "@/components/navigation/UserMenuDropdown"
 
 interface TopNavbarProps {
     user?: any
+    profile?: any
 }
 
-export function TopNavbar({ user }: TopNavbarProps) {
+export function TopNavbar({ user, profile }: TopNavbarProps) {
     const [isLoginOpen, setIsLoginOpen] = React.useState(false)
     const [isSignupOpen, setIsSignupOpen] = React.useState(false)
+
+    // Prioritize DB profile, fallback to Auth user
+    const displayUser = profile || user;
 
     return (
         <>
@@ -31,10 +35,10 @@ export function TopNavbar({ user }: TopNavbarProps) {
 
                     {/* Navigation & Profile */}
                     <div className="flex items-center h-full">
-                        {user ? (
+                        {displayUser ? (
                             <>
                                 <PrimaryNavMenu />
-                                <UserMenuDropdown user={user} />
+                                <UserMenuDropdown user={displayUser} />
                             </>
                         ) : (
                             <div className="flex items-center gap-2">

@@ -1,0 +1,3 @@
+ALTER TABLE public.users ADD COLUMN IF NOT EXISTS experience JSONB DEFAULT '[]';
+ALTER TABLE public.users ADD COLUMN IF NOT EXISTS education JSONB DEFAULT '[]';
+ALTER TABLE public.users ADD COLUMN IF NOT EXISTS summary TEXT;
