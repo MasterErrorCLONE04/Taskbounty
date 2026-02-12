@@ -163,7 +163,13 @@ export async function getRecentOpenTasks() {
 /**
  * Quick create a draft task from the dashboard feed
  */
-export async function createDraftTask(description: string, bounty_amount: number) {
+export async function createDraftTask(data: {
+    description: string
+    amount: number
+    requirements?: string
+    deadline?: string
+    category?: string
+}) {
     try {
         const supabase = await createClient()
         const { data: { user } } = await supabase.auth.getUser()
@@ -176,19 +182,53 @@ export async function createDraftTask(description: string, bounty_amount: number
             .insert({
                 client_id: user.id,
                 title: 'New Bounty Request', // Default title, user can edit later
-                description: description,
-                requirements: 'To be defined', // Default to satisfy NOT NULL
-                category: 'General', // Default to satisfy NOT NULL if applicable
+                description: data.description,
+                requirements: data.requirements || 'To be defined', // Default to satisfy NOT NULL
+                category: data.category || 'General', // Default to satisfy NOT NULL if applicable
                 status: 'DRAFT',
-                bounty_amount: bounty_amount,
-                deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // Default 1 week
+                bounty_amount: data.amount,
+                deadline: data.deadline || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // Default 1 week
             })
             .select('id')
             .single()
 
         if (error) throw error
 
-        return { success: true, taskId: task.id }
+        // 3. Create PaymentIntent in Stripe
+        let paymentIntent
+        try {
+            paymentIntent = await stripe.paymentIntents.create({
+                amount: Math.round(data.amount * 100), // In cents
+                currency: 'usd',
+                metadata: {
+                    task_id: task.id,
+                    client_id: user.id
+                },
+                capture_method: 'automatic'
+            })
+        } catch (stripeErr: any) {
+            console.error('Stripe Error:', stripeErr)
+            throw new Error(`Error de Pago (Stripe): ${stripeErr.message}`)
+        }
+
+        // 4. Create payment record
+        const { error: paymentError } = await supabase
+            .from('payments')
+            .insert({
+                task_id: task.id,
+                client_id: user.id,
+                amount: data.amount,
+                status: 'PENDING',
+                stripe_payment_intent_id: paymentIntent.id
+            })
+
+        if (paymentError) throw paymentError
+
+        return {
+            success: true,
+            taskId: task.id,
+            clientSecret: paymentIntent.client_secret
+        }
     } catch (error: any) {
         console.error('Create Draft Error:', error)
         return { success: false, error: error.message }

@@ -12,7 +12,7 @@ export default function PublicAuthHero() {
             </p>
             <div className="flex items-center justify-center gap-3">
                 <Link
-                    href="/register"
+                    href="/?signup=true"
                     className="bg-sky-500 hover:bg-sky-600 text-white px-8 py-3.5 rounded-full text-sm font-bold transition-all active:scale-95"
                 >
                     Sign up to post tasks

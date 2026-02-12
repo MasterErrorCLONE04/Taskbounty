@@ -11,7 +11,7 @@ export default async function TasksPage() {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
-    if (!user) redirect('/login')
+    if (!user) redirect('/?login=true')
 
     const profile = await getProfile(user.id)
 

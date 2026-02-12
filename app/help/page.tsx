@@ -61,7 +61,7 @@ export default function HelpCenterPage() {
                         Volver al Marketplace
                     </Link>
                     <Link
-                        href="/login"
+                        href="/?login=true"
                         className="bg-sky-500 text-white px-6 py-2 rounded-full text-xs font-bold hover:bg-sky-600 transition-all shadow-lg shadow-sky-500/25 active:scale-95"
                     >
                         Iniciar sesión

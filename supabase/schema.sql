@@ -197,12 +197,12 @@ BEGIN
     new.id, 
     new.email, 
     COALESCE(new.raw_user_meta_data->>'name', 'User'), 
-    'both' -- Defaulting to both for everyone
+    COALESCE(new.raw_user_meta_data->>'role', 'both') -- Use role from metadata or default to both
   )
   ON CONFLICT (id) DO UPDATE SET
     email = EXCLUDED.email,
     name = EXCLUDED.name,
-    role = 'both';
+    role = COALESCE(new.raw_user_meta_data->>'role', EXCLUDED.role);
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

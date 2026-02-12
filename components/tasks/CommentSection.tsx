@@ -161,7 +161,7 @@ export function CommentSection({ taskId, initialComments, currentUser, minimal =
             ) : !minimal && (
                 <div className="bg-slate-50 p-4 rounded-2xl text-center">
                     <p className="text-slate-500 text-sm mb-2">Please log in to join the conversation.</p>
-                    <Link href="/login" className="text-blue-500 font-bold hover:underline text-sm">
+                    <Link href="/?login=true" className="text-blue-500 font-bold hover:underline text-sm">
                         Log In / Sign Up
                     </Link>
                 </div>

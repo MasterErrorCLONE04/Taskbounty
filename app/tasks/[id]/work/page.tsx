@@ -35,7 +35,7 @@ export default async function WorkRoomPage({ params }: { params: Promise<{ id: s
 
     // 1. Get current user
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) redirect('/login')
+    if (!user) redirect('/?login=true')
 
     const profile = await getProfile(user.id)
 

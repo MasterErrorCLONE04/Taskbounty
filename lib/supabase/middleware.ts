@@ -69,7 +69,7 @@ export async function updateSession(request: NextRequest) {
 
     // 2. Auth Guard
     if (!user && isProtectedPath) {
-        return NextResponse.redirect(new URL('/login', request.url))
+        return NextResponse.redirect(new URL('/?login=true', request.url))
     }
 
     // 3. BACK BUTTON PROTECTION: Disable caching for protected routes

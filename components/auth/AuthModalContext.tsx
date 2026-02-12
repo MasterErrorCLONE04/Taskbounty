@@ -1,6 +1,7 @@
 'use client';
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { LoginModal } from './LoginModal';
 import { SignupModal } from './SignupModal';
 
@@ -13,8 +14,25 @@ interface AuthModalContextType {
 const AuthModalContext = createContext<AuthModalContextType | undefined>(undefined);
 
 export function AuthModalProvider({ children }: { children: ReactNode }) {
+    const searchParams = useSearchParams();
+    const router = useRouter();
+    const pathname = usePathname();
+
     const [isLoginOpen, setIsLoginOpen] = useState(false);
     const [isSignupOpen, setIsSignupOpen] = useState(false);
+
+    useEffect(() => {
+        const login = searchParams.get('login');
+        const signup = searchParams.get('signup');
+
+        if (login === 'true') {
+            setIsLoginOpen(true);
+            setIsSignupOpen(false);
+        } else if (signup === 'true') {
+            setIsSignupOpen(true);
+            setIsLoginOpen(false);
+        }
+    }, [searchParams]);
 
     const openLogin = () => {
         setIsSignupOpen(false);
@@ -29,6 +47,15 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
     const closeModals = () => {
         setIsLoginOpen(false);
         setIsSignupOpen(false);
+
+        // Clear search params if they were used to open the modal
+        if (searchParams.get('login') || searchParams.get('signup')) {
+            const params = new URLSearchParams(searchParams.toString());
+            params.delete('login');
+            params.delete('signup');
+            const queryString = params.toString();
+            router.replace(pathname + (queryString ? `?${queryString}` : ''), { scroll: false });
+        }
     };
 
     return (

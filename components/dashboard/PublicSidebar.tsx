@@ -31,7 +31,7 @@ export default function PublicSidebar() {
                     Join TaskBounty to post your own tasks and start earning USDC today.
                 </p>
                 <Link
-                    href="/register"
+                    href="/?signup=true"
                     className="block w-full text-center bg-sky-500 hover:bg-sky-600 text-white font-black py-3.5 rounded-2xl text-xs uppercase tracking-widest shadow-lg shadow-sky-500/20 transition-all active:scale-95"
                 >
                     Join Now

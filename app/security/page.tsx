@@ -30,14 +30,14 @@ export default function SecurityPage() {
                     <Link href="/security" className="text-sky-500 transition-colors">Seguridad</Link>
                 </div>
                 <div className="flex items-center gap-4">
-                    <Link href="/login" className="text-sm font-bold text-slate-900 hover:text-sky-500 transition-colors px-4">
+                    <Link href="/?login=true" className="text-sm font-bold text-slate-900 hover:text-sky-500 transition-colors px-4">
                         Iniciar sesión
                     </Link>
                     <Link
-                        href="/signup"
-                        className="bg-sky-500 text-white px-6 py-2.5 rounded-full text-sm font-bold hover:bg-sky-600 transition-all shadow-lg shadow-sky-500/25 active:scale-95"
+                        href="/?login=true"
+                        className="bg-sky-500 text-white px-6 py-2 rounded-full text-xs font-bold hover:bg-sky-600 transition-all shadow-lg shadow-sky-500/25 active:scale-95"
                     >
-                        Publicar Tarea
+                        Iniciar sesión
                     </Link>
                 </div>
             </nav>
