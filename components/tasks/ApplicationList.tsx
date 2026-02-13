@@ -11,6 +11,7 @@ import {
     Star
 } from 'lucide-react'
 import { acceptApplication } from '@/actions/applications'
+import AssignmentModal from './AssignmentModal'
 
 interface Application {
     id: string
@@ -23,37 +24,46 @@ interface Application {
     worker?: {
         name: string
         rating: number
+        avatar_url?: string
     }
 }
 
 export default function ApplicationList({
     applications,
     taskId,
-    isDisabled
+    isDisabled,
+    bountyAmount,
+    deadline
 }: {
     applications: Application[],
     taskId: string,
-    isDisabled: boolean
+    isDisabled: boolean,
+    bountyAmount: number,
+    deadline: string
 }) {
     const [loadingId, setLoadingId] = useState<string | null>(null)
+    const [selectedApp, setSelectedApp] = useState<Application | null>(null)
 
-    const handleAccept = async (app: Application) => {
-        if (!confirm(`¿Estás seguro de que quieres asignar esta tarea a ${app.worker?.name}?`)) return
+    const handleAssignClick = (app: Application) => {
+        setSelectedApp(app)
+    }
 
-        setLoadingId(app.id)
+    const confirmAssignment = async () => {
+        if (!selectedApp) return
+
+        setLoadingId(selectedApp.id)
         try {
-            await acceptApplication(taskId, app.id, app.worker_id)
-            // Transition handled by server action revalidation
+            await acceptApplication(taskId, selectedApp.id, selectedApp.worker_id)
+            setSelectedApp(null) // Close modal on success (page will reload due to server action)
         } catch (err: any) {
             alert(err.message || 'Error al aceptar la aplicación.')
-        } finally {
-            setLoadingId(null)
+            setLoadingId(null) // Only reset loading if error, otherwise wait for redirect/refresh
         }
     }
 
     if (applications.length === 0) {
         return (
-            <div className="bg-muted/30 border-2 border-dashed border-border rounded-3xl p-12 text-center text-muted-foreground font-medium">
+            <div className="bg-slate-50 border-2 border-dashed border-slate-100 rounded-[2rem] p-12 text-center text-slate-400 font-bold">
                 Todavía no has recibido ninguna aplicación para esta tarea.
             </div>
         )
@@ -64,72 +74,82 @@ export default function ApplicationList({
             {applications.map((app) => (
                 <div
                     key={app.id}
-                    className={`bg-card border rounded-3xl p-8 transition-all hover:shadow-lg ${app.status === 'accepted' ? 'border-primary ring-2 ring-primary/20' : 'border-border'
+                    className={`bg-white border rounded-[2rem] p-6 transition-all hover:shadow-xl hover:shadow-slate-200/50 ${app.status === 'accepted'
+                        ? 'border-blue-500 ring-4 ring-blue-500/10'
+                        : 'border-slate-100'
                         }`}
                 >
-                    <div className="flex flex-col md:flex-row justify-between items-start gap-6">
-                        <div className="flex-grow space-y-4">
-                            <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center">
-                                    <User className="w-6 h-6 text-primary" />
-                                </div>
-                                <div>
-                                    <h3 className="text-xl font-bold">{app.worker?.name || 'Trabajador'}</h3>
-                                    <div className="flex items-center gap-1.5 text-yellow-500 font-bold text-sm">
-                                        <Star className="w-4 h-4 fill-yellow-500" />
-                                        {app.worker?.rating || '0.0'}
-                                    </div>
-                                </div>
-                                {app.status === 'accepted' && (
-                                    <div className="bg-primary text-primary-foreground px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1">
-                                        <Trophy className="w-3 h-3" /> Seleccionado
-                                    </div>
+                    <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-4">
+                            <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-400 overflow-hidden border border-blue-100">
+                                {app.worker?.avatar_url ? (
+                                    <img
+                                        src={app.worker.avatar_url}
+                                        alt={app.worker.name}
+                                        className="w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    <User size={28} />
                                 )}
                             </div>
-
-                            <div className="p-6 bg-muted/50 rounded-2xl">
-                                <p className="text-muted-foreground italic leading-relaxed">
-                                    "{app.proposal_text}"
-                                </p>
-                            </div>
-
-                            <div className="flex items-center gap-6 text-sm font-bold text-muted-foreground uppercase tracking-widest">
-                                <div className="flex items-center gap-2">
-                                    <Clock className="w-4 h-4 text-primary" />
-                                    Entrega en: {app.estimated_time}
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="flex flex-col gap-3 min-w-[200px]">
-                            {app.status === 'pending' && !isDisabled ? (
-                                <button
-                                    onClick={() => handleAccept(app)}
-                                    disabled={!!loadingId}
-                                    className="w-full h-14 bg-primary text-primary-foreground rounded-2xl font-black flex items-center justify-center gap-2 hover:opacity-90 transition-all shadow-lg shadow-primary/20"
-                                >
-                                    {loadingId === app.id ? (
-                                        <Loader2 className="w-5 h-5 animate-spin" />
-                                    ) : (
-                                        <>
-                                            Asignar tarea
-                                            <CheckCircle2 className="w-5 h-5" />
-                                        </>
+                            <div>
+                                <h4 className="font-black text-slate-900 text-lg leading-tight">
+                                    {app.worker?.name || 'Trabajador'}
+                                </h4>
+                                <div className="flex items-center gap-1.5 text-orange-400 mt-1">
+                                    <Star size={14} fill="currentColor" />
+                                    <span className="text-sm font-black">{app.worker?.rating || '0.0'}</span>
+                                    {app.status === 'accepted' && (
+                                        <span className="ml-2 bg-blue-500 text-white text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest">
+                                            Aceptado
+                                        </span>
                                     )}
-                                </button>
-                            ) : app.status === 'accepted' ? (
-                                <div className="w-full h-14 bg-primary/10 text-primary rounded-2xl font-black flex items-center justify-center gap-2 border border-primary/20">
-                                    Aceptado
                                 </div>
-                            ) : (
-                                <div className="w-full h-14 bg-muted text-muted-foreground rounded-2xl font-black flex items-center justify-center gap-2 opacity-50 cursor-not-allowed">
-                                    No seleccionado
-                                </div>
-                            )}
+                            </div>
                         </div>
+
+                        {app.status === 'pending' && !isDisabled ? (
+                            <button
+                                onClick={() => handleAssignClick(app)}
+                                className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 disabled:opacity-50 text-white px-6 py-3 rounded-2xl font-black text-sm transition-all shadow-lg shadow-blue-500/20 active:scale-95"
+                            >
+                                Asignar tarea
+                                <CheckCircle2 size={18} />
+                            </button>
+                        ) : app.status === 'accepted' ? (
+                            <div className="flex items-center gap-2 bg-green-50 text-green-600 px-6 py-3 rounded-2xl font-black text-sm border border-green-100">
+                                <Trophy size={18} />
+                                Seleccionado
+                            </div>
+                        ) : (
+                            <div className="bg-slate-50 text-slate-400 px-6 py-3 rounded-2xl font-black text-sm border border-slate-100 opacity-50">
+                                No seleccionado
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="bg-slate-50/50 rounded-2xl p-5 mb-6 border border-slate-50">
+                        <p className="text-slate-600 font-medium italic leading-relaxed">
+                            "{app.proposal_text}"
+                        </p>
+                    </div>
+
+                    <div className="flex items-center gap-2 text-blue-500 font-black text-[11px] uppercase tracking-wider ml-1">
+                        <Clock size={16} />
+                        <span>Entrega en: {app.estimated_time}</span>
                     </div>
                 </div>
             ))}
+
+            <AssignmentModal
+                isOpen={!!selectedApp}
+                onClose={() => setSelectedApp(null)}
+                onConfirm={confirmAssignment}
+                candidateName={selectedApp?.worker?.name || 'Candidate'}
+                bountyAmount={bountyAmount}
+                deadline={deadline}
+                isProcessing={!!loadingId}
+            />
         </div>
     )
 }

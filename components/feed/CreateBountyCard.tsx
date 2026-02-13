@@ -28,6 +28,7 @@ export function CreateBountyCard({ user }: CreateBountyCardProps) {
         setLoading(true)
         try {
             const result = await createDraftTask({
+                title: bountyText,
                 description: data.description,
                 amount: data.amount,
                 requirements: data.requirements,
@@ -90,9 +91,9 @@ export function CreateBountyCard({ user }: CreateBountyCardProps) {
 
             <BountyDetailsModal
                 isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
+                onCloseAction={() => setIsModalOpen(false)}
                 initialDescription={bountyText}
-                onConfirm={handleConfirmBounty}
+                onConfirmAction={handleConfirmBounty}
             />
         </>
     )

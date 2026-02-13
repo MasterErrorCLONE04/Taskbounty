@@ -24,6 +24,7 @@ export default function BountyCreator({ user }: { user: any }) {
         setLoading(true)
         try {
             const result = await createDraftTask({
+                title: data.description || 'New Bounty',
                 description: data.description,
                 amount: data.amount,
                 requirements: data.requirements,
@@ -88,9 +89,9 @@ export default function BountyCreator({ user }: { user: any }) {
 
             <BountyDetailsModal
                 isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
+                onCloseAction={() => setIsModalOpen(false)}
                 initialDescription=""
-                onConfirm={handleConfirmBounty}
+                onConfirmAction={handleConfirmBounty}
             />
         </>
     )

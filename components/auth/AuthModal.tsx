@@ -7,11 +7,11 @@ import { useRouter } from 'next/navigation'
 
 interface AuthModalProps {
     isOpen: boolean
-    onClose: () => void
+    onCloseAction: () => void
     initialView?: 'login' | 'signup'
 }
 
-export default function AuthModal({ isOpen, onClose, initialView = 'login' }: AuthModalProps) {
+export default function AuthModal({ isOpen, onCloseAction, initialView = 'login' }: AuthModalProps) {
     const router = useRouter()
     const [view, setView] = useState<'login' | 'signup'>(initialView)
     const [loading, setLoading] = useState(false)
@@ -71,13 +71,9 @@ export default function AuthModal({ isOpen, onClose, initialView = 'login' }: Au
             const { data: { user } } = await supabase.auth.getUser()
 
             if (user) {
-                const role = user.user_metadata?.role || 'both'
-                onClose()
-                if (role === 'client') {
-                    router.push('/client/dashboard')
-                } else {
-                    router.push('/worker/dashboard')
-                }
+                onCloseAction()
+                router.push('/')
+                router.refresh()
             } else if (view === 'signup') {
                 setError('Registration successful! Please check your email to confirm.')
             }
@@ -96,14 +92,14 @@ export default function AuthModal({ isOpen, onClose, initialView = 'login' }: Au
             {/* Backdrop */}
             <div
                 className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
-                onClick={onClose}
+                onClick={onCloseAction}
             />
 
             {/* Modal Container */}
             <div className="relative w-full max-w-md bg-white rounded-[2.5rem] shadow-2xl shadow-slate-900/20 overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
                 {/* Close Button */}
                 <button
-                    onClick={onClose}
+                    onClick={onCloseAction}
                     className="absolute top-6 right-6 p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400 hover:text-slate-600 z-10"
                 >
                     <X className="w-5 h-5" />

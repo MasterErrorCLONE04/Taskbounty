@@ -32,7 +32,7 @@ export function CreateGroupButton() {
 
             <CreateGroupModal
                 isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
+                onCloseAction={() => setIsModalOpen(false)}
             />
         </>
     )

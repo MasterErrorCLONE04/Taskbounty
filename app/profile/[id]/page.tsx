@@ -47,6 +47,8 @@ export default async function PublicProfilePage(props: { params: Promise<{ id: s
                     user={currentUser}
                     balance={sidebarData?.balance}
                     collaborators={sidebarData?.collaborators}
+                    suggestedBounties={sidebarData?.suggestedBounties}
+                    whoToFollow={sidebarData?.whoToFollow}
                 />
             </div>
         </div>

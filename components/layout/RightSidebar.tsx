@@ -12,7 +12,8 @@ import { SignupModal } from "@/components/auth/SignupModal"
 
 import { TopEarnersCard } from "@/components/finance/TopEarnersCard"
 import { TrendingSkillsCard } from "@/components/trending/TrendingSkillsCard"
-import { AppFooter } from "@/components/footer/AppFooter"
+import { SidebarFooter } from "./SidebarFooter"
+
 import { AccountOverviewCard } from "@/components/profile/AccountOverviewCard"
 import { QuickStatsCard } from "@/components/stats/QuickStatsCard"
 import { SuggestedBountiesCard } from "@/components/notifications/SuggestedBountiesCard"
@@ -43,10 +44,11 @@ export function RightSidebar({ user, balance, collaborators, suggestedBounties, 
             <div className="space-y-4">
 
                 {/* Auth Modals */}
+                {/* Auth Modals */}
                 <LoginModal
                     isOpen={isLoginOpen}
-                    onClose={() => setIsLoginOpen(false)}
-                    onSwitchToSignup={() => {
+                    onCloseAction={() => setIsLoginOpen(false)}
+                    onSwitchToSignupAction={() => {
                         setIsLoginOpen(false)
                         setIsSignupOpen(true)
                     }}
@@ -54,8 +56,8 @@ export function RightSidebar({ user, balance, collaborators, suggestedBounties, 
 
                 <SignupModal
                     isOpen={isSignupOpen}
-                    onClose={() => setIsSignupOpen(false)}
-                    onSwitchToLogin={() => {
+                    onCloseAction={() => setIsSignupOpen(false)}
+                    onSwitchToLoginAction={() => {
                         setIsSignupOpen(false)
                         setIsLoginOpen(true)
                     }}
@@ -129,7 +131,7 @@ export function RightSidebar({ user, balance, collaborators, suggestedBounties, 
                     </>
                 )}
 
-                <AppFooter />
+                <SidebarFooter />
             </div>
         </aside>
     )

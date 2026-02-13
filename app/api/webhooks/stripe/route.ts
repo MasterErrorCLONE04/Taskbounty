@@ -25,35 +25,49 @@ export async function POST(req: Request) {
     switch (event.type) {
         case 'payment_intent.succeeded':
             const paymentIntent = event.data.object
-            const taskId = paymentIntent.metadata.task_id
-            const clientId = paymentIntent.metadata.client_id
 
-            // 1. Payment is captured automatically (capture_method: automatic)
-            // No need to call stripe.paymentIntents.capture(paymentIntent.id) here
+            if (paymentIntent.metadata.type === 'subscription') {
+                const userId = paymentIntent.metadata.client_id
 
-            // 2. Update payment status to HELD
-            await supabase
-                .from('payments')
-                .update({ status: 'HELD', updated_at: new Date().toISOString() })
-                .eq('stripe_payment_intent_id', paymentIntent.id)
+                // Default to 30 days for now, can be improved with plan metadata
+                const verifiedUntil = new Date()
+                verifiedUntil.setDate(verifiedUntil.getDate() + 30)
 
-            // 3. Update task status to OPEN
-            await supabase
-                .from('tasks')
-                .update({ status: 'OPEN', updated_at: new Date().toISOString() })
-                .eq('id', taskId)
+                const { error: updateError } = await supabase
+                    .from('users')
+                    .update({
+                        is_verified: true,
+                        verified_until: verifiedUntil.toISOString(),
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', userId)
 
-            // 4. Log the state change
-            await supabase
-                .from('state_logs')
-                .insert({
-                    entity_type: 'task',
-                    entity_id: taskId,
-                    old_state: 'DRAFT',
-                    new_state: 'OPEN',
-                    user_id: clientId,
-                    metadata: { stripe_payment_intent_id: paymentIntent.id }
+                if (updateError) {
+                    console.error('Error updating user subscription:', updateError)
+                    throw updateError
+                }
+            } else {
+                // Task Payment Logic
+                const taskId = paymentIntent.metadata.task_id
+                // const clientId = paymentIntent.metadata.client_id // Unused here
+
+                // 1. Payment is captured automatically (capture_method: automatic)
+                // 2, 3, 4. Update status and log state via RPC (Bypass RLS)
+                const { error: rpcError } = await supabase.rpc('activate_task_webhook', {
+                    p_task_id: taskId,
+                    p_payment_intent_id: paymentIntent.id
                 })
+
+                if (rpcError) {
+                    console.error('RPC Error (activate_task_webhook):', rpcError)
+                    throw rpcError
+                }
+
+                // 5. Revalidate paths
+                revalidatePath('/')
+                revalidatePath('/jobs')
+                revalidatePath(`/tasks/${taskId}`)
+            }
 
             break
 
@@ -78,9 +92,8 @@ export async function POST(req: Request) {
 
                 // 2. Revalidate paths
                 revalidatePath(`/profiles/${userId}`)
-                revalidatePath('/freelancers')
-                revalidatePath('/client/settings')
-                revalidatePath('/worker/settings')
+                revalidatePath('/freelancers') // If this exists
+                revalidatePath('/settings') // Assuming a unified settings page
             }
             break
 

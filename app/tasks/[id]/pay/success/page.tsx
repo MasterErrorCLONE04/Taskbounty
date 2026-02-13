@@ -13,6 +13,10 @@ export default function PaymentSuccessPage({ params }: { params: Promise<{ id: s
 
     useEffect(() => {
         const clientSecret = searchParams.get('payment_intent_client_secret')
+
+        // Refresh the router to ensure we pick up the status change from the webhook
+        router.refresh()
+
         if (!clientSecret) {
             setStatus('error')
             return
@@ -37,7 +41,7 @@ export default function PaymentSuccessPage({ params }: { params: Promise<{ id: s
             <div className="min-h-screen flex items-center justify-center bg-background p-6">
                 <div className="text-center space-y-4">
                     <p className="text-destructive font-bold text-xl">Error al verificar el pago.</p>
-                    <Link href="/client/dashboard" className="text-primary hover:underline">Volver al panel</Link>
+                    <Link href="/" className="text-primary hover:underline">Volver al panel</Link>
                 </div>
             </div>
         )
@@ -59,7 +63,7 @@ export default function PaymentSuccessPage({ params }: { params: Promise<{ id: s
 
                 <div className="pt-4">
                     <Link
-                        href="/client/dashboard"
+                        href="/"
                         className="w-full h-14 bg-primary text-primary-foreground rounded-2xl font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-all shadow-lg shadow-primary/20 group text-lg"
                     >
                         Ver mi panel

@@ -171,7 +171,18 @@ export async function getUserBounties(userId: string) {
 
     const { data: bounties, error } = await supabase
         .from('tasks')
-        .select('*')
+        .select(`
+            *,
+            client:users!client_id (
+                id,
+                name,
+                role,
+                avatar_url,
+                bio
+            ),
+            likes(count),
+            comments(count)
+        `)
         .eq('client_id', userId)
         .neq('status', 'DRAFT')
         .order('created_at', { ascending: false })

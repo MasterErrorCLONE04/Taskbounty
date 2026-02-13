@@ -44,8 +44,8 @@ export async function topUpBalance(amount: number = 10) {
         throw new Error('Error al añadir fondos')
     }
 
-    revalidatePath('/client/wallet')
-    revalidatePath('/worker/wallet')
+    revalidatePath('/profile') // Or wherever the balance is displayed
+    revalidatePath('/')
 
     return { success: true, newBalance }
 }

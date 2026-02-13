@@ -73,7 +73,7 @@ export async function submitApplication(taskId: string, formData: {
         })
 
     revalidatePath(`/tasks/${taskId}`)
-    revalidatePath('/worker/dashboard')
+    revalidatePath('/')
 
     return { success: true }
 }
@@ -154,8 +154,7 @@ export async function acceptApplication(taskId: string, applicationId: string, w
 
     revalidatePath(`/tasks/${taskId}`)
     revalidatePath(`/tasks/${taskId}/manage`)
-    revalidatePath('/client/dashboard')
-    revalidatePath('/worker/dashboard')
+    revalidatePath('/')
 
     return { success: true }
 }

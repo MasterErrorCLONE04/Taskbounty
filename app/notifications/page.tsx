@@ -1,6 +1,6 @@
 
 import { createClient } from '@/lib/supabase/server'
-import { getProfile } from '@/actions/profile'
+import { getProfile, getRightSidebarData } from '@/actions/profile'
 import { TopNavbar } from '@/components/layout/TopNavbar'
 import { LeftSidebar } from '@/components/layout/LeftSidebar'
 import { RightSidebar } from '@/components/layout/RightSidebar'
@@ -12,10 +12,11 @@ export default async function NotificationsPage() {
     const { data: { user } } = await supabase.auth.getUser()
     const profile = user ? await getProfile(user.id) : null
     const notifications = await getNotifications()
+    const sidebarData = await getRightSidebarData()
 
     return (
         <div className="h-screen bg-white flex flex-col overflow-hidden">
-            <TopNavbar user={profile || user} />
+            <TopNavbar user={user} profile={profile} />
 
             <div className="flex-1 flex justify-center overflow-hidden">
                 {/* Left Sidebar */}
@@ -27,7 +28,13 @@ export default async function NotificationsPage() {
                 </main>
 
                 {/* Right Sidebar */}
-                <RightSidebar user={profile || user} />
+                <RightSidebar
+                    user={profile || user}
+                    balance={sidebarData?.balance}
+                    collaborators={sidebarData?.collaborators}
+                    suggestedBounties={sidebarData?.suggestedBounties}
+                    whoToFollow={sidebarData?.whoToFollow}
+                />
             </div>
         </div>
     )

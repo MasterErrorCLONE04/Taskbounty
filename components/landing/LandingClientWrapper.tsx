@@ -56,7 +56,7 @@ export default function LandingClientWrapper({
 
             <AuthModal
                 isOpen={isAuthModalOpen}
-                onClose={() => setIsAuthModalOpen(false)}
+                onCloseAction={() => setIsAuthModalOpen(false)}
                 initialView={authModalView}
             />
         </div>

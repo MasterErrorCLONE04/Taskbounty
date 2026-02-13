@@ -5,14 +5,15 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
 import { Loader2 } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
+import { AppLogo } from '@/components/navigation/AppLogo';
 
 interface SignupModalProps {
     isOpen: boolean;
-    onClose: () => void;
-    onSwitchToLogin: () => void;
+    onCloseAction: () => void;
+    onSwitchToLoginAction: () => void;
 }
 
-export function SignupModal({ isOpen, onClose, onSwitchToLogin }: SignupModalProps) {
+export function SignupModal({ isOpen, onCloseAction, onSwitchToLoginAction }: SignupModalProps) {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -49,7 +50,7 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin }: SignupModalPro
             // Automatically log in or show success message?
             // Ideally we'd just close modal and show a toast, or switch to login logic.
             // For now, let's switch to login view or just close.
-            onSwitchToLogin();
+            onSwitchToLoginAction();
 
         } catch (err: any) {
             setError(err.message || 'Error occurred during signup');
@@ -59,9 +60,9 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin }: SignupModalPro
     };
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title="Crear Cuenta">
+        <Modal isOpen={isOpen} onCloseAction={onCloseAction} title="Crear Cuenta">
             <div className="px-12 pb-12 pt-4">
-                <header className="mb-8 text-center">
+                <header className="mb-8 text-center flex flex-col items-center">
                     <h2 className="text-3xl font-black text-slate-900 tracking-tighter mb-2">Join TaskBounty today.</h2>
                 </header>
 
@@ -78,8 +79,8 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin }: SignupModalPro
                             Sign up with Google
                         </button>
                         <button className="w-full h-11 bg-white border border-slate-200 rounded-full flex items-center justify-center gap-3 hover:bg-slate-50 transition-all group font-bold text-sm text-slate-700">
-                            <img src="https://www.apple.com/favicon.ico" className="w-4 h-4" alt="Apple" />
-                            Sign up with Apple
+                            <img src="https://content.linkedin.com/content/dam/me/business/en-us/amp/brand-site/v2/bg/LI-Bug.svg.original.svg" className="w-5 h-5" alt="LinkedIn" />
+                            Sign up with LinkedIn
                         </button>
 
                         <div className="flex items-center gap-4 py-2">
@@ -146,7 +147,7 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin }: SignupModalPro
                 )}
 
                 <p className="mt-8 text-center text-[15px] text-slate-500">
-                    Have an account already? <span onClick={onSwitchToLogin} className="text-sky-500 hover:underline cursor-pointer font-medium">Log in</span>
+                    Have an account already? <span onClick={onSwitchToLoginAction} className="text-sky-500 hover:underline cursor-pointer font-medium">Log in</span>
                 </p>
             </div>
         </Modal>

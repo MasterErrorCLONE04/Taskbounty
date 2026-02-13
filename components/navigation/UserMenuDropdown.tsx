@@ -50,17 +50,14 @@ export function UserMenuDropdown({ user }: UserMenuDropdownProps) {
     return (
         <div className="relative h-full flex items-center" ref={dropdownRef}>
             <div
-                className="flex flex-col items-center justify-center min-w-[64px] h-full text-slate-500 cursor-pointer border-l border-slate-100 ml-2 group hover:bg-slate-50/50 transition-colors"
+                className="flex items-center justify-center h-full cursor-pointer ml-4 group transition-opacity hover:opacity-80"
                 onClick={toggleDropdown}
             >
                 <Avatar
                     src={avatarUrl}
                     fallback={initials}
-                    className="w-6 h-6 border border-slate-200"
+                    className="w-9 h-9 border border-slate-200 shadow-sm"
                 />
-                <div className={`flex items-center text-[11px] mt-0.5 font-medium group-hover:text-slate-900 transition-colors ${isOpen ? 'text-slate-900' : ''}`}>
-                    Me <ChevronDown size={14} className={`ml-0.5 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
-                </div>
             </div>
 
             {/* Dropdown Menu */}

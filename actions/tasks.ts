@@ -91,7 +91,7 @@ export async function createTaskWithEscrow(formData: {
             throw paymentError
         }
 
-        revalidatePath('/client/dashboard')
+        revalidatePath('/')
 
         return {
             taskId: task.id,
@@ -164,6 +164,7 @@ export async function getRecentOpenTasks() {
  * Quick create a draft task from the dashboard feed
  */
 export async function createDraftTask(data: {
+    title: string
     description: string
     amount: number
     requirements?: string
@@ -181,7 +182,7 @@ export async function createDraftTask(data: {
             .from('tasks')
             .insert({
                 client_id: user.id,
-                title: 'New Bounty Request', // Default title, user can edit later
+                title: data.title,
                 description: data.description,
                 requirements: data.requirements || 'To be defined', // Default to satisfy NOT NULL
                 category: data.category || 'General', // Default to satisfy NOT NULL if applicable
@@ -308,4 +309,140 @@ export async function getTasks(options: { search?: string, category?: string } =
         console.error('Unexpected Error in getTasks:', err)
         return []
     }
+}
+
+/**
+ * Update task basic settings
+ */
+export async function updateTask(taskId: string, data: {
+    deadline?: string
+    is_public?: boolean
+    allow_late_submissions?: boolean
+}) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('Unauthorized')
+
+    const { error } = await supabase
+        .from('tasks')
+        .update({
+            ...data,
+            updated_at: new Date().toISOString()
+        })
+        .eq('id', taskId)
+        .eq('client_id', user.id)
+
+    if (error) throw error
+
+    revalidatePath(`/tasks/${taskId}/manage`)
+    return { success: true }
+}
+
+/**
+ * Cancel a task and refund escrow (simplified for MVP)
+ */
+export async function cancelTask(taskId: string) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('Unauthorized')
+
+    // 1. Verify task belongs to user and is in a cancellable state
+    const { data: task } = await supabase
+        .from('tasks')
+        .select('status, bounty_amount')
+        .eq('id', taskId)
+        .eq('client_id', user.id)
+        .single()
+
+    if (!task) throw new Error('Tarea no encontrada.')
+    if (task.status === 'COMPLETED' || task.status === 'CANCELLED') {
+        throw new Error('Esta tarea no puede ser cancelada.')
+    }
+
+    // 2. Update status
+    const { error } = await supabase
+        .from('tasks')
+        .update({
+            status: 'CANCELLED',
+            updated_at: new Date().toISOString()
+        })
+        .eq('id', taskId)
+
+    if (error) throw error
+
+    // 3. Log state change
+    await supabase
+        .from('state_logs')
+        .insert({
+            entity_type: 'task',
+            entity_id: taskId,
+            old_state: task.status,
+            new_state: 'CANCELLED',
+            user_id: user.id
+        })
+
+    revalidatePath(`/tasks/${taskId}/manage`)
+    revalidatePath('/')
+
+    return { success: true }
+}
+
+/**
+ * Increase the bounty of a task (simplified for MVP)
+ */
+export async function increaseBounty(taskId: string, additionalAmount: number) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('Unauthorized')
+
+    // 1. Get current task
+    const { data: task } = await supabase
+        .from('tasks')
+        .select('bounty_amount, status')
+        .eq('id', taskId)
+        .eq('client_id', user.id)
+        .single()
+
+    if (!task) throw new Error('Tarea no encontrada.')
+    if (task.status === 'COMPLETED' || task.status === 'CANCELLED') {
+        throw new Error('No puedes aumentar el bounty de una tarea cerrada.')
+    }
+
+    const newAmount = Number(task.bounty_amount) + Number(additionalAmount)
+
+    // 2. Update bounty
+    const { error } = await supabase
+        .from('tasks')
+        .update({
+            bounty_amount: newAmount,
+            updated_at: new Date().toISOString()
+        })
+        .eq('id', taskId)
+
+    if (error) throw error
+
+    // 3. Create a record of the addition
+    await supabase
+        .from('payments')
+        .insert({
+            task_id: taskId,
+            client_id: user.id,
+            amount: additionalAmount,
+            status: 'HELD', // Assuming it's already funded for this MVP flow
+            created_at: new Date().toISOString()
+        })
+
+    // 4. Log state change
+    await supabase
+        .from('state_logs')
+        .insert({
+            entity_type: 'task',
+            entity_id: taskId,
+            new_state: 'BOUNTY_INCREASED',
+            user_id: user.id,
+            metadata: { additional_amount: additionalAmount, new_total: newAmount }
+        })
+
+    revalidatePath(`/tasks/${taskId}/manage`)
+    return { success: true }
 }

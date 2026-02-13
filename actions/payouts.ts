@@ -50,8 +50,8 @@ export async function createStripeAccountLink() {
 
     const accountLink = await stripe.accountLinks.create({
         account: connectId,
-        refresh_url: `${origin}/worker/dashboard?stripe_error=true`,
-        return_url: `${origin}/worker/dashboard?stripe_success=true`,
+        refresh_url: `${origin}/?stripe_error=true`,
+        return_url: `${origin}/?stripe_success=true`,
         type: 'account_onboarding',
     })
 
@@ -130,7 +130,7 @@ export async function executeWithdrawal(amount: number) {
             })
             .eq('id', withdrawal.id)
 
-        revalidatePath('/worker/dashboard')
+        revalidatePath('/')
         return { success: true, transferId: transfer.id }
 
     } catch (err: any) {

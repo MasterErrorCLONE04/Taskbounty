@@ -96,12 +96,11 @@ export async function approveAndRelease(taskId: string) {
             type: 'payment_released',
             title: '¡Pago liberado!',
             message: `El cliente ha aprobado tu entrega y se han acreditado $${task.bounty_amount} en tu balance.`,
-            link: '/worker/dashboard'
+            link: '/'
         })
 
     revalidatePath(`/tasks/${taskId}/work`)
-    revalidatePath('/worker/dashboard')
-    revalidatePath('/client/dashboard')
+    revalidatePath('/')
 
     return { success: true }
 }

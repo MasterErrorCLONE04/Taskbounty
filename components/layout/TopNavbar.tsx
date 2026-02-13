@@ -15,7 +15,16 @@ interface TopNavbarProps {
 }
 
 export function TopNavbar({ user, profile }: TopNavbarProps) {
-    const { openLogin, openSignup } = useAuthModal();
+    let openLogin = () => console.log("Login (Context Missing)");
+    let openSignup = () => console.log("Signup (Context Missing)");
+
+    try {
+        const auth = useAuthModal();
+        openLogin = auth.openLogin;
+        openSignup = auth.openSignup;
+    } catch (e) {
+        console.error("TopNavbar: AuthModalContext missing!");
+    }
 
     // Prioritize DB profile, fallback to Auth user
     const displayUser = profile || user;

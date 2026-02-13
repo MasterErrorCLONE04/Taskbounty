@@ -1,4 +1,4 @@
-'use client'
+"use client"
 
 import React, { useState, useEffect, useRef } from 'react'
 import { supabase } from '@/lib/supabase/client'
@@ -72,36 +72,40 @@ export default function ChatBox({ taskId, currentUserId }: { taskId: string, cur
     }
 
     return (
-        <div className="flex flex-col h-[500px] bg-card border border-border rounded-3xl overflow-hidden shadow-sm">
-            <div className="p-4 border-b border-border bg-muted/30 flex items-center justify-between">
-                <h3 className="font-bold text-sm uppercase tracking-widest flex items-center gap-2">
-                    <Send className="w-4 h-4 text-primary" /> Sala de Chat
-                </h3>
-                <span className="text-[10px] bg-green-500/10 text-green-500 px-2 py-0.5 rounded-full font-bold">En línea</span>
-            </div>
-
+        <div className="flex flex-col h-[600px] relative">
+            {/* Messages Area - Clean, dotted bg, no internal border */}
             <div
                 ref={scrollRef}
-                className="flex-grow p-6 overflow-y-auto space-y-4 scroll-smooth bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-opacity-5"
+                className="flex-grow overflow-y-auto space-y-6 scroll-smooth pr-4"
+                style={{
+                    backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)',
+                    backgroundSize: '24px 24px'
+                }}
             >
                 {messages.length === 0 ? (
-                    <div className="h-full flex flex-col items-center justify-center text-muted-foreground space-y-2">
-                        <User className="w-8 h-8 opacity-20" />
-                        <p className="text-sm font-medium">No hay mensajes aún. ¡Saluda!</p>
+                    <div className="h-full flex flex-col items-center justify-center text-slate-300 space-y-2">
+                        <User className="w-12 h-12 opacity-20" />
+                        <p className="text-sm font-bold">La sala está lista. ¡Inicia la conversación!</p>
                     </div>
                 ) : (
                     messages.map((msg) => (
                         <div
                             key={msg.id}
-                            className={`flex ${msg.sender_id === currentUserId ? 'justify-end' : 'justify-start'}`}
+                            className={`flex gap-3 ${msg.sender_id === currentUserId ? 'flex-row-reverse' : 'flex-row'}`}
                         >
-                            <div className={`max-w-[80%] p-4 rounded-2xl text-sm ${msg.sender_id === currentUserId
-                                ? 'bg-primary text-primary-foreground rounded-tr-none'
-                                : 'bg-muted text-foreground rounded-tl-none'
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black shrink-0 ${msg.sender_id === currentUserId
+                                ? 'bg-blue-100 text-blue-600'
+                                : 'bg-slate-100 text-slate-500'
                                 }`}>
-                                {msg.message}
-                                <span className={`block text-[10px] mt-1 opacity-60 ${msg.sender_id === currentUserId ? 'text-right' : 'text-left'
-                                    }`}>
+                                {msg.sender_id === currentUserId ? 'YO' : 'User'}
+                            </div>
+
+                            <div className={`max-w-[75%] p-5 rounded-2xl text-sm leading-relaxed shadow-sm ${msg.sender_id === currentUserId
+                                ? 'bg-white border border-slate-100 text-slate-700 rounded-tr-none'
+                                : 'bg-white border border-slate-100 text-slate-700 rounded-tl-none'
+                                }`}>
+                                <p>{msg.message}</p>
+                                <span className="block text-[10px] font-bold text-slate-300 mt-2">
                                     {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                 </span>
                             </div>
@@ -110,24 +114,25 @@ export default function ChatBox({ taskId, currentUserId }: { taskId: string, cur
                 )}
             </div>
 
-            <form onSubmit={handleSend} className="p-4 border-t border-border bg-card">
-                <div className="relative">
+            {/* Input Area - Distinct separate block at bottom */}
+            <div className="mt-4">
+                <form onSubmit={handleSend} className="relative">
                     <input
                         type="text"
-                        placeholder="Escribe un mensaje..."
-                        className="w-full h-12 pl-6 pr-14 rounded-xl bg-background border border-border focus:ring-2 focus:ring-primary outline-none transition-all"
+                        placeholder="Escribe un mensaje de feedback..."
+                        className="w-full h-14 pl-6 pr-14 rounded-2xl bg-slate-50 border border-slate-100 text-slate-700 placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all font-medium"
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
                     />
                     <button
                         type="submit"
                         disabled={loading || !newMessage.trim()}
-                        className="absolute right-2 top-2 w-8 h-8 bg-primary text-primary-foreground rounded-lg flex items-center justify-center hover:opacity-90 transition-opacity disabled:opacity-50"
+                        className="absolute right-2 top-2 w-10 h-10 bg-blue-500 hover:bg-blue-600 text-white rounded-xl flex items-center justify-center transition-all disabled:opacity-50 disabled:bg-slate-300 shadow-lg shadow-blue-500/20"
                     >
-                        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                        {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
                     </button>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     )
 }

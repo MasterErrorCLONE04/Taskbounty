@@ -25,10 +25,10 @@ function SubmitButton() {
 
 interface CreateGroupModalProps {
     isOpen: boolean
-    onClose: () => void
+    onCloseAction: () => void
 }
 
-export function CreateGroupModal({ isOpen, onClose }: CreateGroupModalProps) {
+export function CreateGroupModal({ isOpen, onCloseAction }: CreateGroupModalProps) {
     const [error, setError] = useState<string | null>(null)
     const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
 
@@ -40,7 +40,7 @@ export function CreateGroupModal({ isOpen, onClose }: CreateGroupModalProps) {
         if (result?.error) {
             setError(result.error)
         } else if (result?.success) {
-            onClose()
+            onCloseAction()
             // Optional: redirect to new group page
         }
     }
@@ -56,7 +56,7 @@ export function CreateGroupModal({ isOpen, onClose }: CreateGroupModalProps) {
     }
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title="Create New Group">
+        <Modal isOpen={isOpen} onCloseAction={onCloseAction} title="Create New Group">
             <div className="p-6 pt-2">
                 <div className="text-center mb-8">
                     <h2 className="text-2xl font-bold text-slate-900 mb-2">Start a Community</h2>
@@ -121,7 +121,7 @@ export function CreateGroupModal({ isOpen, onClose }: CreateGroupModalProps) {
                         <SubmitButton />
                         <button
                             type="button"
-                            onClick={onClose}
+                            onClick={onCloseAction}
                             className="w-full mt-4 text-slate-400 font-bold text-sm hover:text-slate-600 transition-colors"
                         >
                             Cancel

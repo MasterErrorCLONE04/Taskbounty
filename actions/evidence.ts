@@ -38,14 +38,15 @@ export async function submitEvidence(taskId: string, formData: {
 
     if (taskError) throw taskError
 
-    // 4. Log the submission (simplified evidence storage for MVP)
+    // Step D: Log state change
     await supabase
-        .from('messages')
+        .from('state_logs')
         .insert({
-            task_id: taskId,
-            sender_id: user.id,
-            content: `📦 ENTREGA REALIZADA:\n${formData.evidence_text}\n\nLinks:\n${formData.links}`,
-            metadata: { type: 'submission', evidence: formData }
+            entity_type: 'task',
+            entity_id: taskId,
+            old_state: 'ASSIGNED',
+            new_state: 'SUBMITTED',
+            user_id: user.id
         })
 
     // 5. Notify client

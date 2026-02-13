@@ -14,6 +14,7 @@ interface AuthModalContextType {
 const AuthModalContext = createContext<AuthModalContextType | undefined>(undefined);
 
 export function AuthModalProvider({ children }: { children: ReactNode }) {
+    console.log("AuthModalProvider rendering");
     const searchParams = useSearchParams();
     const router = useRouter();
     const pathname = usePathname();
@@ -63,13 +64,13 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
             {children}
             <LoginModal
                 isOpen={isLoginOpen}
-                onClose={closeModals}
-                onSwitchToSignup={openSignup}
+                onCloseAction={closeModals}
+                onSwitchToSignupAction={openSignup}
             />
             <SignupModal
                 isOpen={isSignupOpen}
-                onClose={closeModals}
-                onSwitchToLogin={openLogin}
+                onCloseAction={closeModals}
+                onSwitchToLoginAction={openLogin}
             />
         </AuthModalContext.Provider>
     );

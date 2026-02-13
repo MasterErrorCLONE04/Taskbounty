@@ -90,8 +90,7 @@ export async function openDispute(taskId: string, reason: string) {
     }
 
     revalidatePath(`/tasks/${taskId}/work`)
-    revalidatePath('/client/dashboard')
-    revalidatePath('/worker/dashboard')
+    revalidatePath('/')
 
     return { success: true, disputeId: dispute.id }
 }

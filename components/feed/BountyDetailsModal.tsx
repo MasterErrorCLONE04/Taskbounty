@@ -6,9 +6,9 @@ import { DollarSign, Clock, FileText, AlignLeft, Loader2 } from "lucide-react"
 
 interface BountyDetailsModalProps {
     isOpen: boolean
-    onClose: () => void
+    onCloseAction: () => void
     initialDescription: string
-    onConfirm: (data: {
+    onConfirmAction: (data: {
         description: string
         requirements: string
         amount: number
@@ -16,7 +16,7 @@ interface BountyDetailsModalProps {
     }) => Promise<void>
 }
 
-export function BountyDetailsModal({ isOpen, onClose, initialDescription, onConfirm }: BountyDetailsModalProps) {
+export function BountyDetailsModal({ isOpen, onCloseAction, initialDescription, onConfirmAction }: BountyDetailsModalProps) {
     const [description, setDescription] = useState(initialDescription)
     const [requirements, setRequirements] = useState('')
     const [amount, setAmount] = useState('')
@@ -41,7 +41,7 @@ export function BountyDetailsModal({ isOpen, onClose, initialDescription, onConf
             const deadlineDate = new Date()
             deadlineDate.setDate(deadlineDate.getDate() + parseInt(deadline))
 
-            await onConfirm({
+            await onConfirmAction({
                 description,
                 requirements: requirements || 'To be defined',
                 amount: bountyAmount,
@@ -55,12 +55,12 @@ export function BountyDetailsModal({ isOpen, onClose, initialDescription, onConf
     }
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title="Post Your Bounty">
+        <Modal isOpen={isOpen} onCloseAction={onCloseAction} title="Post Your Bounty">
             <form onSubmit={handleSubmit} className="p-8 space-y-6">
                 <div>
                     <label className="flex items-center gap-2 text-sm font-black text-slate-900 mb-2 uppercase tracking-tight">
                         <AlignLeft className="w-4 h-4 text-blue-500" />
-                        Task Description
+                        Bounty Details (Optional description)
                     </label>
                     <textarea
                         value={description}

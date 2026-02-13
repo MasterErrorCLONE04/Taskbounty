@@ -138,7 +138,7 @@ export function BountyCard({ task, currentUser }: BountyCardProps) {
 
                     {/* Content */}
                     <div className="mt-2 text-[15px] text-slate-800 leading-normal space-y-4">
-                        <p className="whitespace-pre-wrap">{cleanContent}</p>
+                        <p className="whitespace-pre-wrap">{task.title}</p>
 
                         {/* Bounty Details Card */}
                         <div className={`p-4 rounded-2xl border transition-all ${isHighPriority ? 'border-orange-100 bg-orange-50/20' : 'border-slate-100 bg-white'
@@ -151,7 +151,13 @@ export function BountyCard({ task, currentUser }: BountyCardProps) {
                                     </p>
                                     <p className="text-2xl font-black text-slate-900">${task.bounty_amount} {task.currency}</p>
 
-                                    <div className="flex items-center gap-1.5 mt-2 text-slate-500">
+                                    {task.description && task.description !== task.title && (
+                                        <p className="mt-2 text-[13px] text-slate-600 line-clamp-3 leading-relaxed">
+                                            {task.description}
+                                        </p>
+                                    )}
+
+                                    <div className="flex items-center gap-1.5 mt-3 text-slate-500">
                                         <Clock size={14} />
                                         <span className="text-[12px] font-medium">Est. 2 Hours</span>
                                     </div>
@@ -207,14 +213,34 @@ export function BountyCard({ task, currentUser }: BountyCardProps) {
                                 <span className={`text-[13px] ${isLiked ? 'text-red-500' : ''}`}>{likesCount}</span>
                             </button>
                         </div>
-                        <button
-                            onClick={(e) => { e.stopPropagation(); /* Logic for apply */ }}
-                            className={`px-5 py-1.5 rounded-full font-bold text-[13px] transition-all shadow-sm ${isHighPriority
-                                ? 'bg-blue-500 text-white hover:bg-blue-600'
-                                : 'bg-blue-500 text-white hover:bg-blue-600'
-                                }`}>
-                            {isHighPriority ? 'Apply' : 'Easy Apply'}
-                        </button>
+                        {currentUser?.id === task.client_id ? (
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    router.push(`/tasks/${task.id}/manage`);
+                                }}
+                                className="px-5 py-1.5 rounded-full font-bold text-[13px] transition-all shadow-sm bg-slate-900 text-white hover:bg-slate-800 flex items-center gap-1.5"
+                            >
+                                <Lock size={14} className="opacity-70" />
+                                Gestión de Tarea
+                            </button>
+                        ) : (
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (!currentUser) {
+                                        openLogin();
+                                    } else {
+                                        router.push(`/tasks/${task.id}`);
+                                    }
+                                }}
+                                className={`px-5 py-1.5 rounded-full font-bold text-[13px] transition-all shadow-sm ${isHighPriority
+                                    ? 'bg-blue-500 text-white hover:bg-blue-600'
+                                    : 'bg-blue-500 text-white hover:bg-blue-600'
+                                    }`}>
+                                {isHighPriority ? 'Apply' : 'Easy Apply'}
+                            </button>
+                        )}
                     </div>
 
                     {/* Inline Comments Section */}

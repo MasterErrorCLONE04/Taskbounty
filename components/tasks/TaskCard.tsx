@@ -1,5 +1,7 @@
+"use client"
 
 import { Lock } from "lucide-react"
+import Link from 'next/link'
 
 export interface TaskItemProps {
     id: string
@@ -26,7 +28,7 @@ export function TaskCard({ task }: { task: TaskItemProps }) {
     }
 
     return (
-        <div className="p-6 border-b border-slate-50 hover:bg-slate-50/30 transition-all cursor-pointer group">
+        <Link href={`/tasks/${task.id}`} className="block p-6 border-b border-slate-50 hover:bg-slate-50/30 transition-all cursor-pointer group">
             <div className="flex justify-between items-start mb-3">
                 <div className="flex items-center gap-3">
                     <span className={`text-[10px] font-black px-2 py-0.5 rounded-sm uppercase tracking-wider ${getStatusColor(task.status)}`}>
@@ -74,6 +76,6 @@ export function TaskCard({ task }: { task: TaskItemProps }) {
                     </button>
                 ))}
             </div>
-        </div>
+        </Link>
     )
 }

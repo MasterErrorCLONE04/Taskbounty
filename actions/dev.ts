@@ -55,7 +55,7 @@ export async function forceActivateTask(taskId: string) {
 
     revalidatePath(`/tasks/${taskId}/manage`)
     revalidatePath('/tasks/explore')
-    revalidatePath('/client/dashboard')
+    revalidatePath('/')
 
     return { success: true }
 }

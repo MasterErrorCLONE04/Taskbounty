@@ -1,4 +1,3 @@
-
 import React from 'react'
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
@@ -12,7 +11,10 @@ import {
     Clock,
     ExternalLink,
     CheckCircle2,
-    Send
+    Send,
+    AlertTriangle,
+    Download,
+    File
 } from 'lucide-react'
 import ChatBox from '@/components/tasks/ChatBox'
 import EvidenceForm from '@/components/tasks/EvidenceForm'
@@ -21,13 +23,10 @@ import RatingForm from '@/components/tasks/RatingForm'
 import DisputeForm from '@/components/tasks/DisputeForm'
 import DisputeInfo from '@/components/tasks/DisputeInfo'
 import FileUploader from '@/components/tasks/FileUploader'
-import FileGallery from '@/components/tasks/FileGallery'
 import { getTaskFiles } from '@/actions/files'
-import { User as UserIcon } from 'lucide-react'
 import { getProfile, getPublicProfile } from '@/actions/profile'
 import { TopNavbar } from '@/components/layout/TopNavbar'
-import { LeftSidebar } from '@/components/layout/LeftSidebar'
-import { RightSidebar } from '@/components/layout/RightSidebar'
+
 
 export default async function WorkRoomPage({ params }: { params: Promise<{ id: string }> }) {
     const supabase = await createClient()
@@ -39,7 +38,7 @@ export default async function WorkRoomPage({ params }: { params: Promise<{ id: s
 
     const profile = await getProfile(user.id)
 
-    // 2. Fetch task details (no joins)
+    // 2. Fetch task details
     const { data: task } = await supabase
         .from('tasks')
         .select('*')
@@ -48,20 +47,20 @@ export default async function WorkRoomPage({ params }: { params: Promise<{ id: s
 
     if (!task) notFound()
 
-    // 2.1 Fetch participants separately for robustness
+    // 3. Fetch participants
     const { data: client } = await supabase
         .from('users')
-        .select('name, rating')
+        .select('name, rating, role')
         .eq('id', task.client_id)
         .single()
 
     const { data: worker } = await supabase
         .from('users')
-        .select('name, rating')
+        .select('name, rating, role')
         .eq('id', task.assigned_worker_id)
         .single()
 
-    // 3. Check access
+    // 4. Check access
     const isClient = user.id === task.client_id
     const isWorker = user.id === task.assigned_worker_id
 
@@ -69,15 +68,7 @@ export default async function WorkRoomPage({ params }: { params: Promise<{ id: s
         redirect('/unauthorized')
     }
 
-    // 4. Check for existing reviews by the current user for this task
-    const { data: existingReview } = await supabase
-        .from('reviews')
-        .select('id')
-        .eq('task_id', id)
-        .eq('reviewer_id', user.id)
-        .single()
-
-    // 5. Fetch active dispute if status is DISPUTED
+    // 5. Fetch active dispute
     const { data: dispute } = await supabase
         .from('disputes')
         .select('*')
@@ -88,231 +79,230 @@ export default async function WorkRoomPage({ params }: { params: Promise<{ id: s
     // 6. Fetch Files
     const files = await getTaskFiles(id)
 
-    // 7. Fetch Participants Info for links
-    const clientProfile = await getPublicProfile(task.client_id)
-    const workerProfile = task.assigned_worker_id ? await getPublicProfile(task.assigned_worker_id) : null
-
-    const deadlineDate = new Date(task.deadline)
-    const isOverdue = deadlineDate < new Date() && task.status !== 'COMPLETED'
+    // 7. Determine Status & Badges
+    const statusLabel = task.status.replace('_', ' ')
+    const activeEscrow = ['ASSIGNED', 'IN_PROGRESS', 'SUBMITTED', 'DISPUTED'].includes(task.status)
 
     return (
         <div className="h-screen bg-white flex flex-col overflow-hidden">
             <TopNavbar user={profile || user} />
 
             <div className="flex-1 flex justify-center overflow-hidden">
-                <LeftSidebar user={profile || user} />
 
-                <main className="flex-1 max-w-7xl border-x border-slate-50 h-full overflow-y-auto no-scrollbar bg-white">
-                    <div className="min-h-screen pb-20">
-                        <nav className="p-6 border-b border-slate-100 bg-white sticky top-0 z-10">
-                            <div className="flex items-center justify-between">
-                                <Link
-                                    href={isClient ? `/tasks/${id}/manage` : '/worker/dashboard'}
-                                    className="flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-slate-900 transition-colors group"
-                                >
-                                    <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-                                    Volver
-                                </Link>
-                                <div className="flex items-center gap-2">
-                                    <Briefcase className="w-5 h-5 text-blue-600" />
-                                    <span className="font-bold text-sm text-slate-700">Sala de Trabajo Activa</span>
+
+                <main className="flex-1 max-w-7xl border-x border-slate-50 h-full overflow-y-auto no-scrollbar bg-slate-50/30">
+                    <div className="min-h-screen p-8 max-w-6xl mx-auto space-y-8">
+
+                        {/* Breadcrumb */}
+                        <Link
+                            href={isClient ? `/tasks/${id}/manage` : '/my-tasks'}
+                            className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-800 transition-colors w-fit"
+                        >
+                            <ArrowLeft className="w-4 h-4" />
+                            Volver a mis tareas
+                        </Link>
+
+                        {/* Task Header Card */}
+                        <div className="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                            <div>
+                                <div className="flex items-center gap-3 mb-3">
+                                    <span className="px-3 py-1 bg-purple-50 text-purple-600 rounded-md text-[10px] font-black uppercase tracking-widest border border-purple-100">
+                                        {statusLabel}
+                                    </span>
+                                    <span className="text-xs text-slate-400 font-bold tracking-wide">
+                                        ID: {task.id.slice(0, 8)}
+                                    </span>
                                 </div>
+                                <h1 className="text-4xl font-black text-slate-900 tracking-tight leading-none">
+                                    {task.title}
+                                </h1>
                             </div>
-                        </nav>
+                            <div className="text-right">
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">
+                                    Bounty Retenido
+                                </span>
+                                <span className="text-4xl font-black text-blue-500 block leading-none">
+                                    ${task.bounty_amount}
+                                </span>
+                            </div>
+                        </div>
 
-                        <div className="px-6 py-8">
-                            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                        {/* Main Grid */}
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
-                                {/* Left Column: Task Info & Chat (8 cols) */}
-                                <div className="lg:col-span-8 space-y-8">
-                                    <header className="bg-white border border-slate-200 rounded-3xl p-8 flex flex-col md:flex-row justify-between gap-6 items-start md:items-center shadow-sm">
-                                        <div>
-                                            <div className="flex items-center gap-3 mb-2">
-                                                <span className="px-2.5 py-1 bg-blue-600/10 text-blue-600 border border-blue-600/20 rounded-full text-[10px] font-black uppercase tracking-wider">
-                                                    {task.status}
-                                                </span>
-                                                <p className="text-xs text-slate-400 font-bold">ID: {task.id.slice(0, 8)}</p>
-                                            </div>
-                                            <h1 className="text-3xl font-black tracking-tight text-slate-900">{task.title}</h1>
-                                        </div>
-                                        <div className="flex items-center gap-4">
-                                            <div className="text-right">
-                                                <span className="text-[10px] font-bold text-slate-400 uppercase block">Bounty Retenido</span>
-                                                <span className="text-2xl font-black text-blue-600">${task.bounty_amount}</span>
-                                            </div>
-                                        </div>
-                                    </header>
-
+                            {/* Left Column: Chat Room (8 cols) */}
+                            <div className="lg:col-span-8 bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden flex flex-col">
+                                <div className="p-6 border-b border-slate-50 flex items-center justify-between">
+                                    <h3 className="flex items-center gap-2 text-sm font-black text-slate-800 uppercase tracking-wider">
+                                        <Send className="w-4 h-4 text-blue-500 -mt-0.5 transform -rotate-45" />
+                                        Sala de Chat
+                                    </h3>
+                                    <span className="bg-green-50 text-green-600 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wide border border-green-100">
+                                        En línea
+                                    </span>
+                                </div>
+                                <div className="p-6 flex-1">
                                     <ChatBox taskId={id} currentUserId={user.id} />
                                 </div>
+                            </div>
 
-                                {/* Right Column: Evidence & Users (4 cols) */}
-                                <div className="lg:col-span-4 space-y-8">
+                            {/* Right Column: Sidebar Widgets (4 cols) */}
+                            <div className="lg:col-span-4 space-y-6">
 
-                                    {/* Delivery Section */}
-                                    {isWorker && task.status === 'ASSIGNED' && (
-                                        <EvidenceForm taskId={id} />
-                                    )}
+                                {/* Action Required Card */}
+                                {task.status === 'SUBMITTED' && (
+                                    <div className="bg-white rounded-[2rem] border-2 border-blue-500 p-6 shadow-lg shadow-blue-500/10 space-y-4 relative overflow-hidden">
+                                        <div className="absolute top-0 right-0 w-20 h-20 bg-blue-50 rounded-bl-[100%] -mr-10 -mt-10 opacity-50 pointer-events-none" />
 
-                                    {task.status === 'SUBMITTED' && (
-                                        <div className="bg-blue-600/5 border border-blue-600/20 rounded-3xl p-8 space-y-4">
-                                            <div className="flex items-center gap-3 text-blue-600 font-bold">
-                                                <ShieldCheck className="w-6 h-6" />
-                                                Trabajo en revisión
-                                            </div>
-                                            <p className="text-sm text-slate-600 leading-relaxed">
-                                                {isClient
-                                                    ? 'El trabajador ha enviado los resultados. Revisa los detalles arriba y aprueba para liberar los fondos.'
-                                                    : 'Has enviado tu entrega. Espera a que el cliente la revise y apruebe.'}
-                                            </p>
-                                            {isClient && (
+                                        <div className="flex items-center gap-2 text-blue-600 mb-2">
+                                            <AlertCircle className="w-5 h-5 fill-current text-white" />
+                                            <h3 className="font-black text-sm uppercase tracking-wide text-blue-700">Acción Requerida</h3>
+                                        </div>
+
+                                        <p className="text-sm text-slate-600 font-medium leading-relaxed">
+                                            {isClient
+                                                ? 'El especialista ha enviado los entregables. Revísalos cuidadosamente antes de liberar el pago.'
+                                                : 'Tu trabajo está en revisión. El cliente debe aprobarlo para liberar los fondos.'}
+                                        </p>
+
+                                        {isClient && (
+                                            <div className="space-y-3 pt-2">
                                                 <ApprovalButton taskId={id} />
-                                            )}
-                                        </div>
-                                    )}
-
-                                    {task.status === 'COMPLETED' && (
-                                        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                                            <div className="bg-green-500/10 border border-green-500/20 rounded-3xl p-8 text-center space-y-2">
-                                                <ShieldCheck className="w-12 h-12 text-green-500 mx-auto" />
-                                                <h3 className="text-xl font-bold text-slate-900">Tarea Finalizada</h3>
-                                                <p className="text-sm text-slate-500">Los fondos han sido liberados correctamente.</p>
-                                            </div>
-
-                                            {!existingReview ? (
-                                                <RatingForm
-                                                    taskId={id}
-                                                    targetUserId={isClient ? task.assigned_worker_id : task.client_id}
-                                                    targetName={isClient ? worker?.name : client?.name}
-                                                />
-                                            ) : (
-                                                <div className="p-8 bg-green-500/10 border border-green-500/20 rounded-3xl text-center">
-                                                    <CheckCircle2 className="w-10 h-10 text-green-500 mx-auto mb-4" />
-                                                    <p className="font-bold text-slate-900">Ya has calificado esta tarea. ¡Gracias!</p>
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
-
-                                    {task.status === 'DISPUTED' && dispute && (
-                                        <DisputeInfo dispute={dispute} />
-                                    )}
-
-                                    {/* Dispute trigger for active tasks (not completed or disputed) */}
-                                    {['ASSIGNED', 'SUBMITTED'].includes(task.status) && (
-                                        <DisputeForm taskId={id} />
-                                    )}
-
-                                    {/* Files Section */}
-                                    <div className="bg-white border border-slate-200 rounded-3xl p-8 space-y-6 shadow-sm">
-                                        <div className="flex items-center justify-between">
-                                            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest">Archivos de la Tarea</h3>
-                                            <div className="px-2 py-0.5 bg-blue-500/10 text-blue-500 rounded-lg text-[10px] font-black uppercase">
-                                                {files.length}
-                                            </div>
-                                        </div>
-
-                                        <FileGallery
-                                            files={files}
-                                            canDelete={true} // In a real app, we'd check if auth.uid() === file.uploader_id
-                                        />
-
-                                        {/* Show uploader only if task is active */}
-                                        {['ASSIGNED', 'SUBMITTED', 'IN_PROGRESS'].includes(task.status) && (
-                                            <div className="pt-4 border-t border-slate-100">
-                                                <FileUploader
-                                                    taskId={id}
-                                                    purpose="deliverable"
-                                                    label="Subir entregable o recurso"
-                                                />
+                                                <button className="w-full py-3 rounded-xl border-2 border-slate-100 text-slate-600 font-bold text-sm hover:bg-slate-50 transition-all flex items-center justify-center gap-2">
+                                                    <FileText className="w-4 h-4" /> Solicitar Revisión
+                                                </button>
                                             </div>
                                         )}
                                     </div>
+                                )}
 
-                                    {/* Participants Card */}
-                                    <div className="bg-white border border-slate-200 rounded-3xl p-8 space-y-6 shadow-sm">
-                                        <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest">Participantes</h3>
-                                        <div className="space-y-4">
-                                            {/* Client Info */}
-                                            {clientProfile && (
-                                                <Link
-                                                    href={`/profiles/${clientProfile.id}`}
-                                                    className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100/50 hover:bg-white hover:shadow-md transition-all group"
-                                                >
-                                                    <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-sm font-black text-blue-500 shadow-sm border border-slate-100">
-                                                        {clientProfile.name.slice(0, 1)}
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Cliente</p>
-                                                        <p className="font-bold text-slate-900 group-hover:text-blue-500 transition-colors">{clientProfile.name}</p>
-                                                    </div>
-                                                </Link>
-                                            )}
+                                {/* Delivery Form for Worker */}
+                                {isWorker && task.status === 'ASSIGNED' && (
+                                    <div className="bg-white rounded-[2rem] border border-slate-200 p-6 shadow-sm">
+                                        <EvidenceForm taskId={id} />
+                                    </div>
+                                )}
 
-                                            {/* Worker Info */}
-                                            {workerProfile ? (
-                                                <Link
-                                                    href={`/profiles/${workerProfile.id}`}
-                                                    className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100/50 hover:bg-white hover:shadow-md transition-all group"
-                                                >
-                                                    <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-sm font-black text-blue-500 shadow-sm border border-slate-100">
-                                                        {workerProfile.name.slice(0, 1)}
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Especialista</p>
-                                                        <p className="font-bold text-slate-900 group-hover:text-blue-500 transition-colors">{workerProfile.name}</p>
-                                                    </div>
-                                                </Link>
-                                            ) : (
-                                                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100/50 text-center">
-                                                    <p className="text-xs font-bold text-slate-400 italic">Buscando especialista...</p>
+                                {/* Dispute Button */}
+                                {!['COMPLETED', 'CANCELLED'].includes(task.status) && (
+                                    <button className="w-full py-4 rounded-[1.5rem] border-2 border-slate-900/5 bg-white text-slate-700 font-bold hover:bg-slate-50 hover:border-slate-900/10 transition-all flex items-center justify-center gap-2 text-sm shadow-sm group">
+                                        <AlertTriangle className="w-4 h-4 text-slate-400 group-hover:text-red-500 transition-colors" />
+                                        Abrir Disputa
+                                    </button>
+                                )}
+
+                                {/* Task Files Widget */}
+                                <div className="bg-white rounded-[2rem] border border-slate-100 p-6 shadow-sm">
+                                    <div className="flex items-center justify-between mb-6">
+                                        <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">
+                                            Archivos de la tarea
+                                        </h3>
+                                        <span className="bg-blue-50 text-blue-600 px-2 py-0.5 rounded text-[10px] font-black">
+                                            {files.length}
+                                        </span>
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        {files.slice(0, 3).map((file: any) => ( // Show only first 3
+                                            <div key={file.id} className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors group cursor-pointer border border-transparent hover:border-slate-200">
+                                                <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center text-red-500 shadow-sm border border-slate-100">
+                                                    <File className="w-5 h-5" />
                                                 </div>
-                                            )}
-                                        </div>
-                                        <div className="pt-6 border-t border-slate-100 space-y-4">
-                                            <div className="flex items-center justify-between text-sm">
-                                                <span className="text-slate-400 font-medium flex items-center gap-2">
-                                                    <Clock className="w-4 h-4" /> Deadline:
-                                                </span>
-                                                <span className={`font-bold ${isOverdue ? 'text-red-500' : 'text-slate-700'}`}>
-                                                    {new Date(task.deadline).toLocaleDateString()}
-                                                </span>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-sm font-bold text-slate-700 truncate">{file.file_name}</p>
+                                                    <p className="text-[10px] text-slate-400 font-bold uppercase">
+                                                        {(file.file_size / 1024).toFixed(1)} KB
+                                                    </p>
+                                                </div>
+                                                <button className="text-slate-300 hover:text-blue-500 transition-colors">
+                                                    <Download className="w-4 h-4" />
+                                                </button>
                                             </div>
-                                            <div className="flex items-center justify-between text-sm">
-                                                <span className="text-slate-400 font-medium flex items-center gap-2">
-                                                    <ShieldCheck className="w-4 h-4" /> Escrow:
-                                                </span>
-                                                <span className="text-green-500 font-bold">ACTIVO</span>
-                                            </div>
-                                        </div>
-                                    </div>
+                                        ))}
+                                        {files.length === 0 && (
+                                            <p className="text-xs text-slate-400 italic text-center py-4">No hay archivos aún</p>
+                                        )}
 
-                                    {/* Details Overlay */}
-                                    <div className="bg-white border border-slate-200 rounded-3xl p-8 space-y-4 shadow-sm">
-                                        <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest">Resumen de requisitos</h3>
-                                        <p className="text-sm text-slate-500 line-clamp-3 italic">
-                                            {task.requirements}
-                                        </p>
-                                        <button className="text-blue-600 text-xs font-bold hover:underline flex items-center gap-1">
-                                            Ver descripción completa <ExternalLink className="w-3 h-3" />
+                                        <button className="w-full mt-2 py-2 text-xs font-bold text-blue-500 hover:text-blue-600 text-center">
+                                            Ver todos los archivos
                                         </button>
+
+                                        {/* File Uploader Trigger */}
+                                        <div className="hidden">
+                                            <FileUploader taskId={id} purpose="asset" label="Upload" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Participants Widget */}
+                                <div className="bg-white rounded-[2rem] border border-slate-100 p-6 shadow-sm space-y-4">
+                                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">
+                                        Participantes
+                                    </h3>
+
+                                    {/* Client */}
+                                    <div className="flex items-center gap-3 p-4 rounded-2xl bg-slate-50/50">
+                                        <div className="w-10 h-10 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center font-black text-sm">
+                                            {(client?.name || '?').charAt(0)}
+                                        </div>
+                                        <div>
+                                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Cliente</span>
+                                            <span className="text-sm font-bold text-slate-900">{client?.name || 'Desconocido'}</span>
+                                        </div>
                                     </div>
 
+                                    {/* Worker */}
+                                    {worker && (
+                                        <div className="flex items-center gap-3 p-4 rounded-2xl bg-slate-50/50">
+                                            <div className="w-10 h-10 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center font-black text-sm">
+                                                {(worker?.name || '?').charAt(0)}
+                                            </div>
+                                            <div>
+                                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Especialista</span>
+                                                <span className="text-sm font-bold text-slate-900">{worker?.name || 'Desconocido'}</span>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <div className="pt-4 mt-2 border-t border-slate-100 space-y-3">
+                                        <div className="flex justify-between items-center text-sm">
+                                            <span className="text-slate-400 font-medium flex items-center gap-2">
+                                                <Clock className="w-4 h-4" /> Deadline:
+                                            </span>
+                                            <span className="font-bold text-slate-900">
+                                                {new Date(task.deadline).toLocaleDateString('es-ES')}
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between items-center text-sm">
+                                            <span className="text-slate-400 font-medium flex items-center gap-2">
+                                                <ShieldCheck className="w-4 h-4" /> Escrow:
+                                            </span>
+                                            <span className="font-bold text-green-500 uppercase text-xs tracking-wide">
+                                                {activeEscrow ? 'Activo' : 'Inactivo'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Requirements Widget */}
+                                <div className="bg-white rounded-[2rem] border border-slate-100 p-6 shadow-sm">
+                                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3">
+                                        Resumen de requisitos
+                                    </h3>
+                                    <p className="text-sm text-slate-800 font-medium italic mb-3 line-clamp-2">
+                                        {task.title}
+                                    </p>
+                                    <Link href={`/tasks/${id}`} className="text-xs font-bold text-blue-500 hover:text-blue-600 flex items-center gap-1 group">
+                                        Ver descripción completa
+                                        <ExternalLink className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                                    </Link>
                                 </div>
 
                             </div>
                         </div>
+
                     </div>
                 </main>
-
-                {/* No Right Sidebar for WorkRoom as it is already crowded, or we could add it but use wide layout */}
-                {/* <RightSidebar user={profile || user} /> */}
-                {/* For consistency with user request "all", I should probably check if RightSidebar fits.
-                    However, the WorkRoom has a 12-col grid that expects full width.
-                    Adding RightSidebar might squash it.
-                    The user said "LeftSidebar".
-                    I will stick to LeftSidebar and TopNavbar.
-                 */}
             </div>
         </div>
     )

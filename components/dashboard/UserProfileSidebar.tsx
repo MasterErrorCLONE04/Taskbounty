@@ -23,7 +23,7 @@ export default function UserProfileSidebar({ user, profile }: { user: any, profi
                     <div className="w-16 h-16 rounded-full border-2 border-white bg-slate-100 shadow-md overflow-hidden mb-3">
                         <img src={avatar} alt={name} className="w-full h-full object-cover" />
                     </div>
-                    <Link href={isWorker ? '/worker/settings' : '/client/settings'} className="hover:underline">
+                    <Link href="/profile" className="hover:underline">
                         <h4 className="font-bold text-slate-900 leading-tight">{name}</h4>
                     </Link>
                     <p className="text-xs text-slate-500 mt-1 font-medium italic">@{name.toLowerCase().replace(/\s/g, '_')}</p>

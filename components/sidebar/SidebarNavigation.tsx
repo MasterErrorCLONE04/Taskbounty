@@ -1,11 +1,12 @@
 import Link from 'next/link'
-import { Users, Calendar, Hash } from 'lucide-react'
+import { Users, Calendar, Hash, Crown } from 'lucide-react'
 
 export function SidebarNavigation() {
     const navItems = [
         { name: 'Groups', href: '/groups', icon: Users },
         { name: 'Events', href: '/events', icon: Calendar },
         { name: 'Followed Hashtags', href: '/hashtags', icon: Hash },
+        { name: 'Premium', href: '/premium', icon: Crown },
     ]
 
     return (

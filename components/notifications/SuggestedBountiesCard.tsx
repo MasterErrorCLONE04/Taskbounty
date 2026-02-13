@@ -33,7 +33,7 @@ export function SuggestedBountiesCard({ bounties }: SuggestedBountiesCardProps) 
                     <p className="text-xs text-slate-400 italic">No suggested bounties yet.</p>
                 )}
 
-                <Link href="/tasks" className="block">
+                <Link href="/jobs" className="block">
                     <Button variant="ghost" className="w-full text-blue-500 text-xs font-bold hover:text-blue-600 hover:bg-blue-50">
                         Show more
                     </Button>

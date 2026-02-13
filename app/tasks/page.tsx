@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { getProfile } from '@/actions/profile'
+import { getProfile, getRightSidebarData } from '@/actions/profile'
 import { TopNavbar } from '@/components/layout/TopNavbar'
 import { LeftSidebar } from '@/components/layout/LeftSidebar'
 import { RightSidebar } from '@/components/layout/RightSidebar'
@@ -14,6 +14,7 @@ export default async function TasksPage() {
     if (!user) redirect('/?login=true')
 
     const profile = await getProfile(user.id)
+    const sidebarData = await getRightSidebarData()
 
     // Fetch assigned tasks (My Work)
     const { data: tasks, error } = await supabase
@@ -58,7 +59,13 @@ export default async function TasksPage() {
                 </main>
 
                 {/* Right Sidebar */}
-                <RightSidebar user={profile || user} />
+                <RightSidebar
+                    user={profile || user}
+                    balance={sidebarData?.balance}
+                    collaborators={sidebarData?.collaborators}
+                    suggestedBounties={sidebarData?.suggestedBounties}
+                    whoToFollow={sidebarData?.whoToFollow}
+                />
             </div>
         </div>
     )

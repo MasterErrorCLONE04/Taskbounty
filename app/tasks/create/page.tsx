@@ -1,10 +1,9 @@
-
 import React from 'react'
 import TaskForm from '@/components/tasks/TaskForm'
 import { ShieldCheck, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
-import { getProfile } from '@/actions/profile'
+import { getProfile, getRightSidebarData } from '@/actions/profile'
 import { TopNavbar } from '@/components/layout/TopNavbar'
 import { LeftSidebar } from '@/components/layout/LeftSidebar'
 import { RightSidebar } from '@/components/layout/RightSidebar'
@@ -19,6 +18,7 @@ export default async function CreateTaskPage() {
     }
 
     const profile = await getProfile(user.id)
+    const sidebarData = await getRightSidebarData()
 
     return (
         <div className="h-screen bg-white flex flex-col overflow-hidden">
@@ -42,7 +42,13 @@ export default async function CreateTaskPage() {
                 </main>
 
                 {/* Right Sidebar - Widgets */}
-                <RightSidebar user={profile || user} />
+                <RightSidebar
+                    user={profile || user}
+                    balance={sidebarData?.balance}
+                    collaborators={sidebarData?.collaborators}
+                    suggestedBounties={sidebarData?.suggestedBounties}
+                    whoToFollow={sidebarData?.whoToFollow}
+                />
             </div>
         </div>
     )

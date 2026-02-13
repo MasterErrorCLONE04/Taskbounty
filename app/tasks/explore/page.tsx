@@ -1,6 +1,5 @@
-
 import { createClient } from '@/lib/supabase/server';
-import { getProfile } from '@/actions/profile';
+import { getProfile, getRightSidebarData } from '@/actions/profile';
 import { TopNavbar } from '@/components/layout/TopNavbar';
 import { LeftSidebar } from '@/components/layout/LeftSidebar';
 import { RightSidebar } from '@/components/layout/RightSidebar';
@@ -10,6 +9,7 @@ export default async function ExploreTasksPage() {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     const profile = user ? await getProfile(user.id) : null;
+    const sidebarData = await getRightSidebarData();
 
     return (
         <div className="h-screen bg-white flex flex-col overflow-hidden">
@@ -25,7 +25,13 @@ export default async function ExploreTasksPage() {
                 </main>
 
                 {/* Right Sidebar - Widgets */}
-                <RightSidebar user={profile || user} />
+                <RightSidebar
+                    user={profile || user}
+                    balance={sidebarData?.balance}
+                    collaborators={sidebarData?.collaborators}
+                    suggestedBounties={sidebarData?.suggestedBounties}
+                    whoToFollow={sidebarData?.whoToFollow}
+                />
             </div>
         </div>
     );
