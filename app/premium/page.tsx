@@ -10,10 +10,31 @@ import PricingCards from './_components/PricingCards'
 import StickyFooter from './_components/StickyFooter'
 import ComparisonTable from './_components/ComparisonTable'
 import BusinessBanner from './_components/BusinessBanner'
+import { getUserPlan, getUserOwnedPlans, switchUserPlan } from '@/actions/premium'
 
 export default function PremiumPage() {
     const [billingCycle, setBillingCycle] = useState<BillingCycle>(BillingCycle.MONTHLY)
     const [selectedPlan, setSelectedPlan] = useState<Tier>(Tier.PREMIUM)
+    const [currentPlanId, setCurrentPlanId] = useState<Tier | null>(null)
+    const [ownedPlans, setOwnedPlans] = useState<Tier[]>([])
+    const [isSwitching, setIsSwitching] = useState(false)
+
+    React.useEffect(() => {
+        // Fetch current active plan
+        getUserPlan().then(plan => {
+            console.log('Fetched Plan:', plan)
+            if (plan) {
+                setCurrentPlanId(plan)
+                setSelectedPlan(plan) // Select user's plan by default
+            }
+        })
+
+        // Fetch all owned plans
+        getUserOwnedPlans().then(plans => {
+            console.log('Owned Plans:', plans)
+            setOwnedPlans(plans)
+        })
+    }, [])
 
     const router = useRouter()
 
@@ -25,8 +46,32 @@ export default function PremiumPage() {
     }
 
     const handleSubscribe = () => {
+        if (selectedPlan === currentPlanId) return;
+
+        // If user owns the plan but it's not active, switch to it
+        if (ownedPlans.includes(selectedPlan)) {
+            handleSwitchPlan(selectedPlan)
+            return
+        }
+
         const price = currentPlan.price;
         router.push(`/premium/checkout?plan=${selectedPlan}&cycle=${billingCycle}&price=${price}`);
+    }
+
+    const handleSwitchPlan = async (tier: Tier) => {
+        if (isSwitching) return
+        setIsSwitching(true)
+        try {
+            await switchUserPlan(tier)
+            setCurrentPlanId(tier)
+            // Optional: Show toast success
+            window.location.reload() // Force reload to ensure everything updates
+        } catch (err) {
+            console.error('Failed to switch plan:', err)
+            // Optional: Show toast error
+        } finally {
+            setIsSwitching(false)
+        }
     }
 
     // Prices and Plans Data
@@ -102,6 +147,9 @@ export default function PremiumPage() {
                         plans={plans}
                         selectedTier={selectedPlan}
                         onSelect={setSelectedPlan}
+                        currentPlan={currentPlanId}
+                        ownedPlans={ownedPlans}
+                        onSwitch={handleSwitchPlan}
                     />
 
                     <ComparisonTable />
@@ -110,7 +158,14 @@ export default function PremiumPage() {
                 </div>
             </main>
 
-            <StickyFooter selectedPlan={currentPlan} onSubscribe={handleSubscribe} />
+            <StickyFooter
+                selectedPlan={currentPlan}
+                onSubscribe={handleSubscribe}
+                isCurrentPlan={selectedPlan === currentPlanId}
+            // Determine if we should show 'Switch' instead of 'Subscribe'
+            // This logic can be handled inside StickyFooter if we pass ownedPlans, or simplistically here:
+            // Actually StickyFooter accepts isCurrentPlan. We might want to add isOwned prop.
+            />
         </div>
     )
 }

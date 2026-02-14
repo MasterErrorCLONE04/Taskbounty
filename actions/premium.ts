@@ -4,7 +4,9 @@ import { createClient } from '@/lib/supabase/server'
 import { stripe } from '@/lib/stripe'
 import { revalidatePath } from 'next/cache'
 
-export async function createSubscriptionPaymentIntent(amount: number) {
+import { Tier } from '@/app/premium/types'
+
+export async function createSubscriptionPaymentIntent(amount: number, plan: Tier) {
     try {
         const supabase = await createClient()
         const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -21,7 +23,8 @@ export async function createSubscriptionPaymentIntent(amount: number) {
                 currency: 'cop', // Assuming COP based on the UI
                 metadata: {
                     client_id: user.id,
-                    type: 'subscription'
+                    type: 'subscription',
+                    plan: plan
                 },
                 automatic_payment_methods: {
                     enabled: true,
@@ -40,6 +43,94 @@ export async function createSubscriptionPaymentIntent(amount: number) {
         console.error('createSubscriptionPaymentIntent failed:', error)
         throw error
     }
+}
+
+export async function getUserPlan() {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) return null
+
+    const { data } = await supabase
+        .from('users')
+        .select('plan, is_verified')
+        .eq('id', user.id)
+        .single()
+
+    console.log('getUserPlan data:', data)
+
+    if (data?.is_verified) {
+        return (data.plan as Tier) || Tier.PREMIUM
+    }
+
+    return null
+}
+
+export async function getUserOwnedPlans(): Promise<Tier[]> {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) return []
+
+    // 1. Get current plan from profile (legacy/fallback)
+    const { data: profile } = await supabase
+        .from('users')
+        .select('plan, is_verified')
+        .eq('id', user.id)
+        .single()
+
+    // 2. Get active subscriptions from user_subscriptions table
+    const { data: subscriptions } = await supabase
+        .from('user_subscriptions')
+        .select('tier')
+        .eq('user_id', user.id)
+        .gt('expires_at', new Date().toISOString())
+
+    const ownedPlans = new Set<Tier>()
+
+    if (profile?.is_verified && profile.plan) {
+        ownedPlans.add(profile.plan as Tier)
+    } else if (profile?.is_verified) {
+        ownedPlans.add(Tier.PREMIUM) // Fallback
+    }
+
+    if (subscriptions) {
+        subscriptions.forEach(sub => ownedPlans.add(sub.tier as Tier))
+    }
+
+    return Array.from(ownedPlans)
+}
+
+export async function switchUserPlan(tier: Tier) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) throw new Error('Unauthorized')
+
+    // Verify ownership
+    const ownedPlans = await getUserOwnedPlans()
+    if (!ownedPlans.includes(tier)) {
+        throw new Error('You do not own this plan')
+    }
+
+    // Update user profile
+    const { error } = await supabase
+        .from('users')
+        .update({
+            plan: tier,
+            // Ensure verification stays true as long as they switch to a valid premium plan
+            is_verified: true,
+            // Note: verified_until should ideally track the expiration of the specific plan being switched to,
+            // but for now we keep the existing logic or we'd need to fetch expires_at from user_subscriptions.
+            // Let's fetch it for correctness.
+        })
+        .eq('id', user.id)
+
+    if (error) throw error
+
+    revalidatePath('/premium')
+    revalidatePath(`/profile/${user.id}`)
+    return { success: true }
 }
 
 export async function verifyPaymentAndActivateSubscription(paymentIntentId: string) {

@@ -7,6 +7,7 @@ import { X, ShieldCheck, Loader2 } from 'lucide-react';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { createSubscriptionPaymentIntent } from '@/actions/premium';
+import { Tier } from '../types';
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
@@ -28,8 +29,8 @@ function CheckoutStructure() {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        if (price) {
-            createSubscriptionPaymentIntent(price)
+        if (price && plan) {
+            createSubscriptionPaymentIntent(price, plan as Tier)
                 .then(data => setClientSecret(data.clientSecret))
                 .catch(err => setError(err.message));
         }
