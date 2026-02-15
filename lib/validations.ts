@@ -1,5 +1,5 @@
 // Valid transitions for task states
-export const VALID_TRANSITIONS = {
+export const VALID_TRANSITIONS: Record<string, string[]> = {
     'DRAFT': ['OPEN', 'CANCELLED'],
     'OPEN': ['ASSIGNED', 'CANCELLED'],
     'ASSIGNED': ['IN_PROGRESS', 'CANCELLED'],
@@ -32,7 +32,7 @@ export const APPLICATION_VALIDATIONS = {
  * @param {string} nextStatus 
  * @returns {boolean}
  */
-export function isValidTransition(currentStatus, nextStatus) {
+export function isValidTransition(currentStatus: string, nextStatus: string): boolean {
     if (!VALID_TRANSITIONS[currentStatus]) return false;
     return VALID_TRANSITIONS[currentStatus].includes(nextStatus);
 }

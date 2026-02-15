@@ -115,7 +115,7 @@ export async function getRecentOpenTasks() {
             .from('tasks')
             .select(`
                 *,
-                client:users!client_id(id, name, avatar_url, bio),
+                client:users!client_id(id, name, avatar_url, bio, is_verified),
                 likes(count),
                 comments(count)
             `)
@@ -157,9 +157,74 @@ export async function getRecentOpenTasks() {
         return []
     }
 }
+
 /**
- * Quick create a draft task from the dashboard feed
+ * Get tasks from users the current user follows
  */
+export async function getFollowedTasks() {
+    try {
+        const supabase = await createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+
+        if (!user) return []
+
+        // 1. Get list of followed user IDs
+        const { data: follows } = await supabase
+            .from('follows')
+            .select('following_id')
+            .eq('follower_id', user.id)
+
+        if (!follows || follows.length === 0) return []
+
+        const followingIds = follows.map(f => f.following_id)
+
+        // 2. Fetch tasks from these users
+        const { data: tasks, error } = await supabase
+            .from('tasks')
+            .select(`
+                *,
+                client:users!client_id(id, name, avatar_url, bio, is_verified),
+                likes(count),
+                comments(count)
+            `)
+            .in('client_id', followingIds)
+            .eq('status', 'OPEN')
+            .order('created_at', { ascending: false })
+            .limit(20)
+
+        if (error) {
+            console.error('Supabase Error in getFollowedTasks:', error.message)
+            return []
+        }
+
+        // 3. Enrich with "is_liked" status
+        let likedMap: Record<string, boolean> = {}
+        if (tasks && tasks.length > 0) {
+            const taskIds = tasks.map(t => t.id)
+            const { data: userLikes } = await supabase
+                .from('likes')
+                .select('task_id')
+                .eq('user_id', user.id)
+                .in('task_id', taskIds)
+
+            userLikes?.forEach(l => {
+                likedMap[l.task_id] = true
+            })
+        }
+
+        const enrichedTasks = tasks?.map(t => ({
+            ...t,
+            likes_count: t.likes?.[0]?.count || 0,
+            comments_count: t.comments?.[0]?.count || 0,
+            is_liked: !!likedMap[t.id]
+        }))
+
+        return enrichedTasks || []
+    } catch (err: any) {
+        console.error('Unexpected Error in getFollowedTasks:', err)
+        return []
+    }
+}
 /**
  * Quick create a draft task from the dashboard feed
  */
@@ -249,7 +314,7 @@ export async function getAssignedTasks(filter: 'active' | 'history' = 'active') 
         .from('tasks')
         .select(`
             *,
-            client:users!client_id(name, avatar_url),
+            client:users!client_id(name, avatar_url, is_verified),
             files(count)
         `)
         .eq('assigned_worker_id', user.id)
@@ -282,7 +347,7 @@ export async function getTasks(options: { search?: string, category?: string } =
             .from('tasks')
             .select(`
                 *,
-                client:users!client_id(id, name, avatar_url, bio, rating),
+                client:users!client_id(id, name, avatar_url, bio, rating, is_verified),
                 likes(count),
                 comments(count)
             `)

@@ -69,7 +69,7 @@ export default function HelpCenterPage() {
                 </div>
             </nav>
 
-            <main className="flex-grow pt-20">
+            <main className="grow pt-20">
                 {/* HERO SEARCH SECTION */}
                 <section className="bg-white px-6 py-20 md:py-32 border-b border-slate-100">
                     <div className="max-w-3xl mx-auto text-center">
@@ -108,7 +108,7 @@ export default function HelpCenterPage() {
                                 { icon: <Briefcase className="w-5 h-5" />, title: "Perfil de Freelancer", desc: "Gestiona tus habilidades, portafolio y cobros." },
                                 { icon: <User className="w-5 h-5" />, title: "Perfil de Cliente", desc: "Publicación de tareas y gestión de contratos." }
                             ].map((cat, i) => (
-                                <div key={i} className="bg-white border border-slate-100 p-8 rounded-[2rem] hover:shadow-xl hover:shadow-slate-200/50 transition-all group cursor-pointer text-center">
+                                <div key={i} className="bg-white border border-slate-100 p-8 rounded-4xl hover:shadow-xl hover:shadow-slate-200/50 transition-all group cursor-pointer text-center">
                                     <div className="w-12 h-12 bg-sky-50 text-sky-500 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
                                         {cat.icon}
                                     </div>

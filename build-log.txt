@@ -1,0 +1,96 @@
+
+> taskbounty@0.1.0 build
+> next build
+
+Ôû▓ Next.js 16.1.6 (Turbopack)
+- Environments: .env.local
+
+ÔÜá The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+  Creating an optimized production build ...
+Ô£ô Compiled successfully in 7.4s
+  Running TypeScript ...
+  Collecting page data using 11 workers ...
+  Generating static pages using 11 workers (0/34) ...
+AuthModalProvider rendering
+AuthModalProvider rendering
+AuthModalProvider rendering
+AuthModalProvider rendering
+AuthModalProvider rendering
+AuthModalProvider rendering
+AuthModalProvider rendering
+AuthModalProvider rendering
+AuthModalProvider rendering
+AuthModalProvider rendering
+AuthModalProvider rendering
+AuthModalProvider rendering
+  Generating static pages using 11 workers (8/34) 
+AuthModalProvider rendering
+AuthModalProvider rendering
+AuthModalProvider rendering
+AuthModalProvider rendering
+  Generating static pages using 11 workers (16/34) 
+AuthModalProvider rendering
+AuthModalProvider rendering
+AuthModalProvider rendering
+AuthModalProvider rendering
+AuthModalProvider rendering
+AuthModalProvider rendering
+AuthModalProvider rendering
+AuthModalProvider rendering
+AuthModalProvider rendering
+AuthModalProvider rendering
+AuthModalProvider rendering
+  Generating static pages using 11 workers (25/34) 
+AuthModalProvider rendering
+Ô£ô Generating static pages using 11 workers (34/34) in 1131.4ms
+  Finalizing page optimization ...
+
+Route (app)
+Ôöî ãÆ /
+Ôö£ Ôùï /_not-found
+Ôö£ ãÆ /accessibility
+Ôö£ ãÆ /ads-info
+Ôö£ ãÆ /api/webhooks/stripe
+Ôö£ Ôùï /blog
+Ôö£ ãÆ /cookies
+Ôö£ ãÆ /discover
+Ôö£ ãÆ /events
+Ôö£ ãÆ /groups
+Ôö£ ãÆ /groups/[id]
+Ôö£ ãÆ /hashtags
+Ôö£ Ôùï /help
+Ôö£ ãÆ /jobs
+Ôö£ Ôùï /legal/cookies
+Ôö£ Ôùï /legal/privacy
+Ôö£ Ôùï /legal/terms
+Ôö£ Ôùï /manifest.webmanifest
+Ôö£ ãÆ /messages
+Ôö£ ãÆ /notifications
+Ôö£ Ôùï /premium
+Ôö£ Ôùï /premium/checkout
+Ôö£ Ôùï /premium/success
+Ôö£ ãÆ /privacy
+Ôö£ ãÆ /profile
+Ôö£ ãÆ /profile/[id]
+Ôö£ ãÆ /profiles/[id]
+Ôö£ Ôùï /robots.txt
+Ôö£ Ôùï /security
+Ôö£ ãÆ /sitemap.xml
+Ôö£ ãÆ /tasks
+Ôö£ ãÆ /tasks/[id]
+Ôö£ ãÆ /tasks/[id]/apply
+Ôö£ ãÆ /tasks/[id]/manage
+Ôö£ ãÆ /tasks/[id]/pay
+Ôö£ ãÆ /tasks/[id]/pay/success
+Ôö£ ãÆ /tasks/[id]/work
+Ôö£ ãÆ /tasks/create
+Ôö£ ãÆ /tasks/explore
+Ôö£ ãÆ /terms
+Ôöö Ôùï /unauthorized
+
+
+ãÆ Proxy (Middleware)
+
+Ôùï  (Static)   prerendered as static content
+ãÆ  (Dynamic)  server-rendered on demand
+

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { getTrendingSkills } from "@/actions/stats"
+import { TrendingUp } from "lucide-react"
 
 interface TrendingSkill {
     name: string
@@ -49,17 +50,19 @@ export function TrendingSkillsCard() {
     }
 
     return (
-        <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 shadow-sm">
-            <h3 className="text-lg font-black text-slate-900 mb-4">Trending Skills</h3>
-            <ul className="space-y-4">
+        <div className="bg-white rounded-[1.5rem] p-6 border border-slate-100 shadow-sm">
+            <h3 className="text-[17px] font-black text-slate-900 mb-6 tracking-tight">Trending Skills</h3>
+            <div className="space-y-6">
                 {trendingSkills.map((skill) => (
-                    <li key={skill.name} className="cursor-pointer group">
-                        <p className="text-[11px] text-slate-500 font-bold mb-0.5">{skill.category} · Trending</p>
-                        <p className="font-black text-slate-900 group-hover:text-blue-500 group-hover:underline text-[15px]">#{skill.name}</p>
-                        <p className="text-[11px] text-slate-400 font-medium">{skill.activeCount} active tasks</p>
-                    </li>
+                    <div key={skill.name} className="flex items-center justify-between group cursor-pointer hover:bg-slate-50/50 -mx-2 px-2 py-1 rounded-lg transition-colors">
+                        <div>
+                            <h4 className="text-[15px] font-black text-slate-900 mb-0.5 group-hover:text-blue-600 transition-colors">#{skill.name}</h4>
+                            <p className="text-[13px] text-slate-500 font-medium">{skill.activeCount} active tasks</p>
+                        </div>
+                        <TrendingUp size={16} className="text-slate-400 group-hover:text-blue-500 transition-colors" />
+                    </div>
                 ))}
-            </ul>
+            </div>
         </div>
     )
 }

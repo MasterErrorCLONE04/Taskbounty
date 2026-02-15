@@ -4,7 +4,43 @@ import { getRightSidebarData, getPublicProfile } from '@/actions/profile'
 import { TopNavbar } from '@/components/layout/TopNavbar'
 import { RightSidebar } from '@/components/layout/RightSidebar'
 import { ProfileView } from '@/components/profile/ProfileView'
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+
+export async function generateMetadata(props: { params: Promise<{ id: string }> }): Promise<Metadata> {
+    const params = await props.params
+    const profile = await getPublicProfile(params.id)
+
+    if (!profile) {
+        return {
+            title: 'Profile Not Found',
+        }
+    }
+
+    return {
+        title: `${profile.name} (@${profile.username || 'user'}) | TaskBounty`,
+        description: profile.bio || `Check out ${profile.name}'s profile on TaskBounty.`,
+        openGraph: {
+            title: `${profile.name} | TaskBounty Member`,
+            description: profile.bio || `Check out ${profile.name}'s profile on TaskBounty.`,
+            images: [
+                {
+                    url: profile.avatar_url || '/default-avatar.png',
+                    width: 800,
+                    height: 800,
+                    alt: profile.name,
+                }
+            ],
+            type: 'profile',
+        },
+        twitter: {
+            card: 'summary',
+            title: `${profile.name} | TaskBounty Member`,
+            description: profile.bio || `Check out ${profile.name}'s profile.`,
+            images: [profile.avatar_url || '/default-avatar.png'],
+        }
+    }
+}
 
 export default async function PublicProfilePage(props: { params: Promise<{ id: string }> }) {
     const params = await props.params

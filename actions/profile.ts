@@ -129,6 +129,18 @@ export async function getRightSidebarData() {
 
     if (!user) return null
 
+    // Get user details including stripe_connect_id
+    const { data: userDetails } = await supabase
+        .from('users')
+        .select('stripe_connect_id')
+        .eq('id', user.id)
+        .single()
+
+    // Attach to user object for downstream use
+    if (userDetails) {
+        user.user_metadata = { ...user.user_metadata, stripe_connect_id: userDetails.stripe_connect_id }
+    }
+
     // 1. Fetch Balance
     const { data: balance } = await supabase
         .from('balances')
@@ -235,5 +247,57 @@ export async function searchUsers(query: string) {
         return []
     }
 
+    if (error) {
+        console.error('Error searching users:', error)
+        return []
+    }
+
     return users
+}
+
+export async function uploadAvatar(formData: FormData) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) throw new Error('Unauthorized')
+
+    const file = formData.get('file') as File
+    if (!file) throw new Error('No file provided')
+
+    const fileExt = file.name.split('.').pop()
+    const filePath = `${user.id}/avatar-${Date.now()}.${fileExt}`
+
+    const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file, { upsert: true })
+
+    if (uploadError) {
+        throw new Error('Error uploading avatar')
+    }
+
+    const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath)
+
+    // Update user profile with new avatar URL
+    await supabase
+        .from('users')
+        .update({ avatar_url: publicUrl })
+        .eq('id', user.id)
+
+    return { success: true, avatarUrl: publicUrl }
+}
+
+export async function purchaseVerification() {
+    // This is a placeholder for the Stripe checkout session creation
+    // In a real implementation, you would create a Stripe Checkout Session
+    // and return the URL.
+
+    // For now, we'll just return a mock success or redirect to a premium selection page
+    // or arguably this should call createCheckoutSession from actions/premium
+
+    // Given the context of "purchase verification", maybe it maps to a specific Plan?
+    // Let's assume it redirects to the premium page for now.
+
+    return { success: true, url: '/premium' }
 }

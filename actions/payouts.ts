@@ -101,7 +101,7 @@ export async function executeWithdrawal(amount: number) {
     if (wError) throw wError
 
     try {
-        // 3. Deduct from platform balance
+        // 3. Deduct from platform balance (Full amount including fee)
         const { error: bError } = await supabase.rpc('deduct_balance', {
             p_user_id: user.id,
             p_amount: amount
@@ -109,15 +109,22 @@ export async function executeWithdrawal(amount: number) {
 
         if (bError) throw bError
 
-        // 4. Create Stripe Transfer
+        // Calculate Fee (15%)
+        const fee = amount * 0.15
+        const netAmount = amount - fee
+        const transferAmountCents = Math.round(netAmount * 100)
+
+        // 4. Create Stripe Transfer (Net amount)
         const transfer = await stripe.transfers.create({
-            amount: Math.round(amount * 100),
+            amount: transferAmountCents,
             currency: 'usd',
             destination: profile.stripe_connect_id,
-            description: `Transferencia TaskBounty - ID: ${withdrawal.id}`,
+            description: `Transferencia TaskBounty - ID: ${withdrawal.id} (Fee: $${fee.toFixed(2)})`,
             metadata: {
                 withdrawal_id: withdrawal.id,
-                user_id: user.id
+                user_id: user.id,
+                fee: fee.toFixed(2),
+                original_amount: amount.toFixed(2)
             }
         })
 

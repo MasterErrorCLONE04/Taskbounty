@@ -91,7 +91,14 @@ export default function ProfileSettingsForm({ initialData }: ProfileSettingsForm
         setSuccess(false)
 
         try {
-            await updateProfile(formData)
+            const profileFormData = new FormData()
+            profileFormData.append('name', formData.name)
+            profileFormData.append('bio', formData.bio)
+            // Skills need to be a comma-separated string or handle differently in backend.
+            // In actions/profile.ts: const skills = skillsString ? skillsString.split(',')...
+            profileFormData.append('skills', formData.skills.join(','))
+
+            await updateProfile(profileFormData)
             setSuccess(true)
             setTimeout(() => setSuccess(false), 3000)
         } catch (error) {

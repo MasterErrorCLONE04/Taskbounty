@@ -30,10 +30,10 @@ export default function PublicSignupWidget({ onOpenAuth }: { onOpenAuth?: (view:
                     onClick={() => onOpenAuth?.('signup')}
                     className="w-full h-[3.25rem] flex items-center justify-center gap-3 border border-slate-200 rounded-full text-sm font-bold text-slate-700 hover:bg-slate-50 transition-all active:scale-[0.98]"
                 >
-                    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M17.05 20.28c-.96.95-2.04 1.8-3.4 1.8-1.41 0-1.84-.86-3.41-.86-1.58 0-2.05.84-3.41.84-1.31 0-2.43-.9-3.46-2.39-2.08-3.03-1.59-7.14.97-9.54 1.27-1.18 2.76-1.82 4.15-1.82 1.48 0 2.45.86 3.51.86 1.06 0 1.9-.86 3.54-.86 1.2 0 3.01.69 4.12 1.82-1.28 1.41-1.38 4.29-.07 5.76.71.8 1.55 1.46 2.41 1.9-.66 2.04-1.63 4.16-3.45 5.23zm-3.43-16.14c.71-.85 1.25-2.01 1.06-3.14-1.04.05-2.13.71-2.9 1.64-.7.83-1.29 2.11-1.06 3.19 1.18.1 2.19-.84 2.9-1.69z" />
+                    <svg className="w-5 h-5 fill-[#0a66c2]" viewBox="0 0 24 24">
+                        <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452z" />
                     </svg>
-                    Sign up with Apple
+                    Sign up with LinkedIn
                 </button>
 
                 <div className="relative py-4">

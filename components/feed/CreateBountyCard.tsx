@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Avatar } from "@/components/ui/Avatar"
-import { Image, Calendar, FileText, Loader2 } from "lucide-react"
+import { Image, Calendar, BarChart3, Loader2 } from "lucide-react"
 import { createDraftTask } from "@/actions/tasks"
 import { BountyDetailsModal } from "./BountyDetailsModal"
 
@@ -51,41 +51,41 @@ export function CreateBountyCard({ user }: CreateBountyCardProps) {
 
     return (
         <>
-            <div className="p-4 border-b border-slate-100 bg-white mb-6">
-                <div className="flex gap-4">
+            <div className="bg-white rounded-[1.5rem] p-5 border border-slate-100 shadow-sm mb-8">
+                <div className="flex gap-4 mb-4">
                     <Avatar
                         src={user.avatar_url || user.user_metadata?.avatar_url}
                         fallback={user.name?.[0] || user.user_metadata?.name?.[0] || 'U'}
                         className="w-12 h-12 flex-shrink-0 border border-slate-100"
                     />
-                    <div className="flex-1 space-y-3">
+                    <div className="flex-1">
                         <textarea
                             value={bountyText}
                             onChange={(e) => setBountyText(e.target.value)}
                             disabled={loading}
-                            placeholder="Describe your task to get started..."
-                            className="w-full border-none focus:ring-0 text-lg placeholder:text-slate-400 resize-none min-h-[60px] py-2 outline-none disabled:opacity-50"
+                            placeholder="Post a new bounty task..."
+                            className="w-full border-none focus:ring-0 text-[16px] placeholder:text-slate-400 resize-none min-h-[50px] py-2 outline-none disabled:opacity-50"
                         />
-
-                        <div className="flex justify-between items-center pt-3 border-t border-slate-50">
-                            <div className="flex gap-1">
-                                {[Image, Calendar, FileText].map((Icon, idx) => (
-                                    <button key={idx} disabled={loading} className="p-2 text-blue-500 hover:bg-blue-50 rounded-full transition-colors disabled:opacity-50">
-                                        <Icon size={20} />
-                                    </button>
-                                ))}
-                            </div>
-                            <button
-                                onClick={() => setIsModalOpen(true)}
-                                disabled={!bountyText.trim() || loading}
-                                className={`px-5 py-2 rounded-full font-bold text-[14px] transition-all flex items-center gap-2 ${bountyText.trim() && !loading ? 'bg-blue-500 text-white shadow-md shadow-blue-100 hover:bg-blue-600' : 'bg-blue-200 text-white cursor-not-allowed'
-                                    }`}
-                            >
-                                {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-                                {loading ? 'Processing...' : 'Post Bounty'}
-                            </button>
-                        </div>
                     </div>
+                </div>
+
+                <div className="flex justify-between items-center pl-[60px]">
+                    <div className="flex gap-3">
+                        {[Image, Calendar, BarChart3].map((Icon, idx) => (
+                            <button key={idx} disabled={loading} className="text-[#0095ff] hover:bg-blue-50 rounded-lg p-1.5 transition-colors disabled:opacity-50">
+                                <Icon size={20} />
+                            </button>
+                        ))}
+                    </div>
+                    <button
+                        onClick={() => setIsModalOpen(true)}
+                        disabled={!bountyText.trim() || loading}
+                        className={`px-6 py-2 rounded-xl font-bold text-[14px] transition-all flex items-center gap-2 ${bountyText.trim() && !loading ? 'bg-[#0095ff] hover:bg-[#0080db] text-white shadow-md active:scale-95' : 'bg-blue-200 text-white cursor-not-allowed'
+                            }`}
+                    >
+                        {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+                        {loading ? 'Posting...' : 'Post Bounty'}
+                    </button>
                 </div>
             </div>
 

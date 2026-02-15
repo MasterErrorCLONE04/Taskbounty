@@ -1,5 +1,6 @@
+
 import { createClient } from '@/lib/supabase/server';
-import { getRecentOpenTasks } from '@/actions/tasks';
+import { getRecentOpenTasks, getFollowedTasks } from '@/actions/tasks';
 import { getProfile, getRightSidebarData } from '@/actions/profile';
 import { TopNavbar } from '@/components/layout/TopNavbar';
 import { LeftSidebar } from '@/components/layout/LeftSidebar';
@@ -7,12 +8,18 @@ import { RightSidebar } from '@/components/layout/RightSidebar';
 import { HomeHero } from '@/components/feed/HomeHero';
 import { CreateBountyCard } from '@/components/feed/CreateBountyCard';
 import { BountyCard } from '@/components/feed/BountyCard';
+import { FeedContainer } from '@/components/feed/FeedContainer';
 
 export default async function LandingPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  const profile = user ? await getProfile(user.id) : null;
-  const recentTasks = await getRecentOpenTasks();
+
+  // Parallel data fetching
+  const [profile, recentTasks, followedTasks] = await Promise.all([
+    user ? getProfile(user.id) : null,
+    getRecentOpenTasks(),
+    user ? getFollowedTasks() : Promise.resolve([])
+  ]);
   const sidebarData = await getRightSidebarData();
 
   return (
@@ -25,18 +32,12 @@ export default async function LandingPage() {
 
         {/* Center Feed */}
         <main className="flex-1 max-w-2xl border-x border-slate-50 h-full overflow-y-auto no-scrollbar bg-slate-50/50">
-          {user ? <CreateBountyCard user={profile || user} /> : <HomeHero />}
-
-          <div className="divide-y divide-slate-50 pb-20">
-            {recentTasks?.map((task) => (
-              <BountyCard key={task.id} task={task as any} currentUser={profile || user} />
-            ))}
-
-            {(!recentTasks || recentTasks.length === 0) && (
-              <div className="p-12 text-center">
-                <p className="text-slate-400 font-medium">No active bounties found. Be the first to post one!</p>
-              </div>
-            )}
+          <div className="p-6">
+            <FeedContainer
+              user={profile || user}
+              tasks={recentTasks || []}
+              followedTasks={followedTasks || []}
+            />
           </div>
         </main>
 

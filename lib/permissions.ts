@@ -1,12 +1,24 @@
+
+interface User {
+    id: string;
+    role?: string;
+}
+
+interface Task {
+    client_id: string;
+    assigned_worker_id?: string;
+    status: string;
+}
+
 /**
  * Checks if a user has permission to perform a specific action on a task
  * 
- * @param {Object} user - The current user object
- * @param {Object} task - The task object
+ * @param {User} user - The current user object
+ * @param {Task} task - The task object
  * @param {string} action - The action to perform (e.g., 'assign_worker', 'submit_delivery')
  * @returns {boolean}
  */
-export function hasPermission(user, task, action) {
+export function hasPermission(user: User | null, task: Task, action: string): boolean {
     if (!user) return false;
 
     const isOwner = task.client_id === user.id;
@@ -36,12 +48,13 @@ export function hasPermission(user, task, action) {
 
 /**
  * Checks if a user has a specific role
- * @param {Object} user 
+ * @param {User} user 
  * @param {string} role - 'client', 'worker', 'both'
  * @returns {boolean}
  */
-export function hasRole(user, role) {
+export function hasRole(user: User | null, role: string): boolean {
     if (!user) return false;
     if (user.role === 'both') return true;
     return user.role === role;
 }
+

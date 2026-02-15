@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import type { Metadata } from 'next'
 import { getProfile } from '@/actions/profile'
 import { getComments } from '@/actions/social'
 import { TopNavbar } from '@/components/layout/TopNavbar'
@@ -26,6 +27,35 @@ interface TaskDetailPageProps {
     params: Promise<{ id: string }>
 }
 
+export async function generateMetadata({ params }: TaskDetailPageProps): Promise<Metadata> {
+    const { id } = await params
+    const supabase = await createClient()
+    const { data: task } = await supabase.from('tasks').select('*').eq('id', id).single()
+
+    if (!task) {
+        return {
+            title: 'Task Not Found',
+        }
+    }
+
+    return {
+        title: task.title,
+        description: task.requirements.slice(0, 160),
+        openGraph: {
+            title: task.title,
+            description: task.requirements.slice(0, 160),
+            type: 'article',
+            publishedTime: task.created_at,
+            authors: ['TaskBounty'],
+        },
+        twitter: {
+            card: 'summary_large_image',
+            title: task.title,
+            description: task.requirements.slice(0, 160),
+        }
+    }
+}
+
 export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
     const { id } = await params
     const supabase = await createClient()
@@ -48,6 +78,37 @@ export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
     if (error || !task) {
         notFound()
     }
+
+    const taskJsonLd = {
+        '@context': 'https://schema.org',
+        '@type': 'JobPosting',
+        title: task.title,
+        description: task.requirements,
+        datePosted: task.created_at,
+        validThrough: task.deadline,
+        employmentType: 'CONTRACTOR',
+        hiringOrganization: {
+            '@type': 'Organization',
+            name: 'TaskBounty',
+            logo: 'https://taskbounty.vercel.app/icon-512.png'
+        },
+        baseSalary: {
+            '@type': 'MonetaryAmount',
+            currency: task.currency,
+            value: {
+                '@type': 'QuantitativeValue',
+                value: task.amount,
+                unitText: 'FIXED'
+            }
+        },
+        jobLocation: {
+            '@type': 'Place',
+            address: {
+                '@type': 'PostalAddress',
+                addressCountry: 'Worldwide'
+            }
+        }
+    };
 
     // Check if liked
     let isLiked = false
@@ -88,6 +149,10 @@ export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
             <TopNavbar user={user} profile={profile} />
 
             <div className="flex-1 flex justify-center overflow-hidden">
+                <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{ __html: JSON.stringify(taskJsonLd) }}
+                />
                 <LeftSidebar user={profile || user} />
 
                 <main className="flex-1 max-w-6xl border-x border-slate-50 h-full overflow-y-auto no-scrollbar bg-white">
