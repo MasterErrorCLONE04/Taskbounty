@@ -24,6 +24,7 @@ export function CreateBountyCard({ user }: CreateBountyCardProps) {
         requirements: string
         amount: number
         deadline: string
+        category: string
     }) => {
         setLoading(true)
         try {
@@ -32,7 +33,8 @@ export function CreateBountyCard({ user }: CreateBountyCardProps) {
                 description: data.description,
                 amount: data.amount,
                 requirements: data.requirements,
-                deadline: data.deadline
+                deadline: data.deadline,
+                category: data.category
             })
 
             if (result.success && result.taskId) {
@@ -93,6 +95,7 @@ export function CreateBountyCard({ user }: CreateBountyCardProps) {
                 isOpen={isModalOpen}
                 onCloseAction={() => setIsModalOpen(false)}
                 initialDescription={bountyText}
+                initialCategory={bountyText.match(/#(\w+)/)?.[1] || ''}
                 onConfirmAction={handleConfirmBounty}
             />
         </>

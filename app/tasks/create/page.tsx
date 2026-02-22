@@ -26,7 +26,7 @@ export default async function CreateTaskPage() {
 
             <div className="flex-1 flex justify-center overflow-hidden">
                 {/* Left Sidebar - Navigation */}
-                <LeftSidebar user={profile || user} />
+                <LeftSidebar user={profile || user} sidebarData={sidebarData} />
 
                 <main className="flex-1 max-w-4xl mx-auto px-6 overflow-y-auto pb-20 pt-8 no-scrollbar border-x border-slate-50">
                     <header className="mb-12 text-center">

@@ -15,7 +15,7 @@ export default async function HashtagsPage() {
             <TopNavbar user={user} profile={profile} />
 
             <div className="flex-1 flex justify-center overflow-hidden bg-white">
-                <LeftSidebar user={profile || user} />
+                <LeftSidebar user={profile || user} sidebarData={sidebarData} />
 
                 <main className="flex-1 max-w-2xl border-x border-slate-50 h-full overflow-y-auto no-scrollbar bg-white">
                     <div className="p-8 text-center mt-20">

@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/Button"
 import { LoginModal } from "@/components/auth/LoginModal"
 import { SignupModal } from "@/components/auth/SignupModal"
 
-import { TopEarnersCard } from "@/components/finance/TopEarnersCard"
 import { TrendingSkillsCard } from "@/components/trending/TrendingSkillsCard"
 import { SidebarFooter } from "./SidebarFooter"
 
@@ -21,6 +20,8 @@ import { WhoToFollowCard } from "@/components/notifications/WhoToFollowCard"
 import { VerifiedSkillsCard } from "@/components/profile/VerifiedSkillsCard"
 import { CertificationsCard } from "@/components/profile/CertificationsCard"
 import { TopCollaboratorsCard } from "@/components/profile/TopCollaboratorsCard"
+import { TopEarnersCard } from "@/components/finance/TopEarnersCard"
+
 
 interface RightSidebarProps {
     user?: any
@@ -43,7 +44,6 @@ export function RightSidebar({ user, balance, collaborators, suggestedBounties, 
         <aside className="hidden lg:flex flex-col w-80 h-full border-l border-transparent px-4 overflow-y-auto py-6 no-scrollbar">
             <div className="space-y-4">
 
-                {/* Auth Modals */}
                 {/* Auth Modals */}
                 <LoginModal
                     isOpen={isLoginOpen}

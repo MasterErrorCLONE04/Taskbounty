@@ -184,5 +184,25 @@ export async function getSocialStats(taskId: string) {
         .select('*', { count: 'exact', head: true })
         .eq('task_id', taskId)
 
+
     return { likes: likesCount || 0, comments: commentsCount || 0 }
+}
+
+export async function getFollowCounts(userId: string) {
+    const supabase = await createClient()
+
+    const { count: followersCount } = await supabase
+        .from('follows')
+        .select('*', { count: 'exact', head: true })
+        .eq('following_id', userId)
+
+    const { count: followingCount } = await supabase
+        .from('follows')
+        .select('*', { count: 'exact', head: true })
+        .eq('follower_id', userId)
+
+    return {
+        followers: followersCount || 0,
+        following: followingCount || 0
+    }
 }

@@ -51,7 +51,7 @@ export default async function TasksPage() {
 
             <div className="flex-1 flex justify-center overflow-hidden">
                 {/* Left Sidebar */}
-                <LeftSidebar user={profile || user} />
+                <LeftSidebar user={profile || user} sidebarData={sidebarData} />
 
                 {/* Center Feed */}
                 <main className="flex-1 max-w-2xl border-x border-slate-50 h-full overflow-y-auto no-scrollbar">

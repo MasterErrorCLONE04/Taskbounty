@@ -2,7 +2,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { getRightSidebarData } from '@/actions/profile'
 import { TopNavbar } from '@/components/layout/TopNavbar'
-import { LeftSidebar } from '@/components/layout/LeftSidebar'
 import { RightSidebar } from '@/components/layout/RightSidebar'
 import { ProfileView } from '@/components/profile/ProfileView'
 
@@ -38,6 +37,7 @@ export default async function ProfilePage() {
 
                 <div className="flex-1 flex justify-center overflow-hidden bg-white">
                     {/* Center Feed */}
+
                     <main className="flex-1 max-w-4xl border-x border-slate-50 h-full overflow-y-auto no-scrollbar">
                         <ProfileView />
                     </main>

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/Button"
 import { followUser } from '@/actions/social'
 import Link from 'next/link'
 import { Avatar } from '@/components/ui/Avatar'
+import { VerifiedBadge } from '@/components/ui/VerifiedBadge'
 import { useAuthModal } from '@/components/auth/AuthModalContext'
 
 interface WhoToFollowCardProps {
@@ -41,35 +42,38 @@ export function WhoToFollowCard({ users }: WhoToFollowCardProps) {
                 <CardTitle className="text-[1.1rem] font-bold text-slate-900">Who to follow</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-                {displayUsers.map((userToFollow) => {
-                    const isFollowing = followingIds.includes(userToFollow.id)
+                {displayUsers.filter(u => !followingIds.includes(u.id)).map((userToFollow) => {
                     const isLoading = loadingIds.includes(userToFollow.id)
                     const initials = userToFollow.name?.[0] || userToFollow.email?.[0] || 'U'
                     const handle = userToFollow.email?.split('@')[0] || 'user'
+                    const isPremium = userToFollow.is_verified || userToFollow.plan === 'premium' || userToFollow.plan === 'pro'
 
                     return (
-                        <div key={userToFollow.id} className="flex items-center justify-between">
+                        <div key={userToFollow.id} className="flex items-center justify-between group/item">
                             <Link href={`/profile/${userToFollow.id}`} className="flex items-center gap-3 group">
                                 <Avatar
                                     src={userToFollow.avatar_url}
                                     fallback={initials}
-                                    className="w-9 h-9 border border-slate-100 group-hover:opacity-80 transition-opacity"
+                                    className="w-10 h-10 border border-slate-100 group-hover:opacity-80 transition-opacity"
                                 />
                                 <div>
-                                    <p className="text-[13px] font-bold text-slate-900 group-hover:text-blue-500 transition-colors line-clamp-1">{userToFollow.name || 'Anonymous'}</p>
-                                    <p className="text-[11px] text-slate-500 line-clamp-1">@{handle}</p>
+                                    <div className="flex items-center gap-1">
+                                        <p className="text-[13.5px] font-bold text-slate-900 group-hover:text-blue-500 transition-colors line-clamp-1">{userToFollow.name || 'Anonymous'}</p>
+                                        <VerifiedBadge className="w-3.5 h-3.5" />
+                                    </div>
+                                    <p className="text-[11.5px] text-slate-500 line-clamp-1 mt-0.5">@{handle}</p>
                                 </div>
                             </Link>
                             <Button
                                 size="sm"
-                                onClick={() => !isFollowing && handleFollow(userToFollow.id)}
-                                disabled={isFollowing || isLoading}
-                                className={`rounded-full text-[11px] font-bold px-4 h-7 transition-all ${isFollowing
-                                    ? 'bg-slate-100 text-slate-500 cursor-default hover:bg-slate-100'
-                                    : 'bg-slate-900 text-white hover:bg-slate-800 active:scale-95'
+                                onClick={() => handleFollow(userToFollow.id)}
+                                disabled={isLoading}
+                                className={`rounded-xl text-[11px] font-bold px-4 h-8 transition-all shadow-sm ${isLoading
+                                    ? 'bg-blue-50 text-blue-500 cursor-default shadow-none'
+                                    : 'bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white active:scale-95 border border-blue-100 hover:border-blue-600'
                                     }`}
                             >
-                                {isLoading ? '...' : isFollowing ? 'FOLLOWED' : 'FOLLOW'}
+                                {isLoading ? '...' : 'FOLLOW'}
                             </Button>
                         </div>
                     )

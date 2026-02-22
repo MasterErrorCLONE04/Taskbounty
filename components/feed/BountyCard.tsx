@@ -168,7 +168,7 @@ export function BountyCard({ task, currentUser }: BountyCardProps) {
                                     {user.name}
                                 </Link>
                                 {user.isVerified && <VerifiedBadge className="w-4 h-4" />}
-                                <span className="text-slate-400 text-[13px] font-medium">· {formatDistanceToNow(new Date(task.created_at))} ago</span>
+                                <span className="text-slate-400 text-[13px] font-medium" suppressHydrationWarning>· {formatDistanceToNow(new Date(task.created_at))} ago</span>
                             </div>
                             <p className="text-[13px] text-slate-500 font-medium">{user.role}</p>
                         </div>
@@ -244,7 +244,7 @@ export function BountyCard({ task, currentUser }: BountyCardProps) {
                 <div className="flex flex-wrap gap-2.5 mb-5">
                     <div className="px-3 py-1.5 bg-slate-100 rounded-lg flex items-center gap-2 border border-slate-200/50">
                         <Users size={14} className="text-slate-500" />
-                        <span className="text-[11px] font-black text-slate-600 uppercase tracking-wide">GENERAL</span>
+                        <span className="text-[11px] font-black text-slate-600 uppercase tracking-wide">{task.category || 'General'}</span>
                     </div>
                     <div className="px-3 py-1.5 bg-slate-100 rounded-lg flex items-center gap-2 border border-slate-200/50">
                         <User size={14} className="text-slate-500" />

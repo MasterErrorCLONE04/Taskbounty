@@ -3,6 +3,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { getFollowCounts } from './social'
 
 export async function getProfile(userId: string) {
     const supabase = await createClient()
@@ -163,18 +164,36 @@ export async function getRightSidebarData() {
         .order('created_at', { ascending: false })
         .limit(3)
 
-    // 4. Who to Follow (Randomized or popular users excluding self)
-    const { data: whoToFollow } = await supabase
+    // 4. Who to Follow (Premium/Verified users not already followed by current user)
+    const { data: followingData } = await supabase
+        .from('follows')
+        .select('following_id')
+        .eq('follower_id', user.id)
+
+    const followingIds = followingData?.map(f => f.following_id) || []
+
+    let whoToFollowQuery = supabase
         .from('users')
-        .select('id, name, avatar_url, email')
+        .select('id, name, avatar_url, email, is_verified, plan')
         .neq('id', user.id)
-        .limit(3)
+        .or('is_verified.eq.true,plan.in.(premium,pro)')
+
+    if (followingIds.length > 0) {
+        whoToFollowQuery = whoToFollowQuery.not('id', 'in', `(${followingIds.join(',')})`)
+    }
+
+    const { data: whoToFollow } = await whoToFollowQuery.limit(3)
+
+    // 5. Follow Counts
+    const followCounts = await getFollowCounts(user.id)
 
     return {
         balance: balance || { available_balance: 0, pending_balance: 0 },
         collaborators: collaborators || [],
         suggestedBounties: suggestedBounties || [],
-        whoToFollow: whoToFollow || []
+        whoToFollow: whoToFollow || [],
+        followersCount: followCounts.followers,
+        followingCount: followCounts.following
     }
 }
 

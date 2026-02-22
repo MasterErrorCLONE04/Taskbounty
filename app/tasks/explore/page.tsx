@@ -17,7 +17,7 @@ export default async function ExploreTasksPage() {
 
             <div className="flex-1 flex justify-center overflow-hidden">
                 {/* Left Sidebar - Navigation */}
-                <LeftSidebar user={profile || user} />
+                <LeftSidebar user={profile || user} sidebarData={sidebarData} />
 
                 {/* Center Feed */}
                 <main className="flex-1 max-w-4xl border-x border-slate-50 h-full overflow-y-auto no-scrollbar bg-white">

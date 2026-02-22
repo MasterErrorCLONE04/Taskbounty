@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import type { Metadata } from 'next'
-import { getProfile } from '@/actions/profile'
+import { getProfile, getRightSidebarData } from '@/actions/profile'
 import { getComments } from '@/actions/social'
 import { TopNavbar } from '@/components/layout/TopNavbar'
 import { LeftSidebar } from '@/components/layout/LeftSidebar'
@@ -144,6 +144,9 @@ export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
         is_liked: isLiked
     }
 
+    // Fetch Sidebar Data
+    const sidebarData = await getRightSidebarData()
+
     return (
         <div className="h-screen bg-white flex flex-col overflow-hidden">
             <TopNavbar user={user} profile={profile} />
@@ -153,7 +156,7 @@ export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
                     type="application/ld+json"
                     dangerouslySetInnerHTML={{ __html: JSON.stringify(taskJsonLd) }}
                 />
-                <LeftSidebar user={profile || user} />
+                <LeftSidebar user={profile || user} sidebarData={sidebarData} />
 
                 <main className="flex-1 max-w-6xl border-x border-slate-50 h-full overflow-y-auto no-scrollbar bg-white">
                     {/* Header Nav */}

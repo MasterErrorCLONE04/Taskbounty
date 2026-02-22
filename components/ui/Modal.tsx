@@ -11,9 +11,10 @@ interface ModalProps {
     children: React.ReactNode
     desktopOnly?: boolean
     title?: string
+    hideHeader?: boolean
 }
 
-export function Modal({ isOpen, onCloseAction, children, desktopOnly = false, title }: ModalProps) {
+export function Modal({ isOpen, onCloseAction, children, desktopOnly = false, title, hideHeader = false }: ModalProps) {
     const [isMounted, setIsMounted] = React.useState(false)
 
     React.useEffect(() => {
@@ -45,20 +46,22 @@ export function Modal({ isOpen, onCloseAction, children, desktopOnly = false, ti
 
             {/* Modal Content */}
             <div className={`relative z-50 w-full max-w-lg bg-white rounded-[2rem] shadow-2xl animate-in zoom-in-95 duration-200 p-0 overflow-hidden ${desktopOnly ? 'hidden md:block' : ''}`}>
-                <div className="flex items-center justify-between p-4 px-6 border-b border-slate-100 min-h-[70px]">
-                    <button
-                        onClick={onCloseAction}
-                        className="p-2 -ml-2 rounded-full hover:bg-slate-100 transition-colors"
-                    >
-                        <X className="w-5 h-5 text-slate-900" />
-                    </button>
+                {!hideHeader && (
+                    <div className="flex items-center justify-between p-4 px-6 border-b border-slate-100 min-h-[70px]">
+                        <button
+                            onClick={onCloseAction}
+                            className="p-2 -ml-2 rounded-full hover:bg-slate-100 transition-colors"
+                        >
+                            <X className="w-5 h-5 text-slate-900" />
+                        </button>
 
-                    <div className="absolute left-1/2 -translate-x-1/2">
-                        <AppLogo />
+                        <div className="absolute left-1/2 -translate-x-1/2">
+                            <AppLogo />
+                        </div>
+
+                        <div className="w-9" /> {/* Spacer for centering */}
                     </div>
-
-                    <div className="w-9" /> {/* Spacer for centering */}
-                </div>
+                )}
 
                 <div className="max-h-[85vh] overflow-y-auto custom-scrollbar">
                     {children}
