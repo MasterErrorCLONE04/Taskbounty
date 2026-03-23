@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthModalProvider } from "@/components/auth/AuthModalContext";
+import { FloatingChatSystem } from "@/components/messages/FloatingChatSystem";
 import JsonLd from "@/components/seo/JsonLd";
 
 const geistSans = Geist({
@@ -69,6 +70,7 @@ export default function RootLayout({
           <AuthModalProvider>
             {/* Main Layout Provider */}
             {children}
+            <FloatingChatSystem />
           </AuthModalProvider>
         </Suspense>
       </body>
