@@ -1,82 +1,73 @@
-import { useEffect, useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from '@/lib/supabase/client'
 
-export function usePresence(userId: string | undefined, conversationId?: string) {
-    const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set())
+export function usePresence(userId?: string, conversationId?: string) {
     const [typingUsers, setTypingUsers] = useState<Set<string>>(new Set())
-    const [typingChannel, setTypingChannel] = useState<any>(null)
+    const channelRef = useRef<any>(null)
+    const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-    // 1. Global Presence (Online Status)
-    useEffect(() => {
-        if (!userId) return
-
-        const globalChannel = supabase.channel('presence-global', {
-            config: { presence: { key: userId } },
-        })
-
-        globalChannel
-            .on('presence', { event: 'sync' }, () => {
-                const state = globalChannel.presenceState()
-                const onlineIds = new Set<string>(Object.keys(state))
-                setOnlineUsers(onlineIds)
-            })
-            .subscribe(async (status) => {
-                if (status === 'SUBSCRIBED') {
-                    await globalChannel.track({ online_at: new Date().toISOString() })
-                }
-            })
-
-        return () => {
-            supabase.removeChannel(globalChannel)
-        }
-    }, [userId])
-
-    // 2. Typing Presence (Conversation specific)
     useEffect(() => {
         if (!userId || !conversationId) {
             setTypingUsers(new Set())
             return
         }
 
-        const channel = supabase.channel(`typing-${conversationId}`, {
-            config: { presence: { key: userId } },
-        })
+        // Use a random key for the presence channel to avoid conflicts between tabs
+        // We'll pass the actual userId in the presence payload
+        const channel = supabase.channel(`typing-${conversationId}`)
 
         channel
             .on('presence', { event: 'sync' }, () => {
                 const state = channel.presenceState()
                 const typingIds = new Set<string>()
 
-                for (const key in state) {
-                    if (key === userId) continue // Ignore self
-                    // Check if *any* presence for this user has isTyping: true
-                    const userPresences = state[key] as any[]
-                    if (userPresences.some(p => p.isTyping)) {
-                        typingIds.add(key)
-                    }
-                }
+                // Iterate through all presences from all sessions/tabs
+                Object.values(state).forEach((presences: any) => {
+                    presences.forEach((p: any) => {
+                        if (p.user_id && p.user_id !== userId && p.isTyping) {
+                            typingIds.add(p.user_id)
+                        }
+                    })
+                })
+                
                 setTypingUsers(typingIds)
             })
             .subscribe(async (status) => {
                 if (status === 'SUBSCRIBED') {
-                    // Initial state: not typing
-                    await channel.track({ isTyping: false })
+                    // Start with not typing
+                    await channel.track({ user_id: userId, isTyping: false })
                 }
             })
 
-        setTypingChannel(channel)
+        channelRef.current = channel
 
         return () => {
-            supabase.removeChannel(channel)
-            setTypingChannel(null)
+            if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current)
+            if (channelRef.current) {
+                supabase.removeChannel(channelRef.current)
+                channelRef.current = null
+            }
+            setTypingUsers(new Set())
         }
     }, [userId, conversationId])
 
     const setTyping = async (isTyping: boolean) => {
-        if (typingChannel) {
-            await typingChannel.track({ isTyping })
+        if (!channelRef.current || !userId) return
+        
+        if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current)
+
+        if (channelRef.current.state === 'joined') {
+            await channelRef.current.track({ user_id: userId, isTyping })
+
+            if (isTyping) {
+                typingTimeoutRef.current = setTimeout(async () => {
+                    if (channelRef.current?.state === 'joined') {
+                        await channelRef.current.track({ user_id: userId, isTyping: false })
+                    }
+                }, 3000)
+            }
         }
     }
 
-    return { onlineUsers, typingUsers, setTyping }
+    return { typingUsers, setTyping }
 }

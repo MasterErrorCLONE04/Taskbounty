@@ -5,7 +5,7 @@ import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import { ContactList } from "@/components/messages/ContactList"
 import { ChatWindow } from "@/components/messages/ChatWindow"
 import { formatDistanceToNow } from 'date-fns'
-import { usePresence } from '@/hooks/usePresence'
+import { useGlobalPresence } from '@/context/PresenceContext'
 
 interface MessagesInterfaceProps {
     initialConversations: any[]
@@ -21,7 +21,21 @@ export function MessagesInterface({ initialConversations, currentUserId }: Messa
     const [conversations, setConversations] = useState(initialConversations)
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
     const [isChatFullWidth, setIsChatFullWidth] = useState(false)
-    const { onlineUsers, typingUsers, setTyping } = usePresence(currentUserId, activeId || undefined)
+    
+    // Unified presence from context (online + typing)
+    const { onlineUsers, typingUsers: typingMap, setTyping: setGlobalTyping } = useGlobalPresence()
+
+    // Derive a Set of users typing in the active conversation (for ChatWindow compatibility)
+    const typingUsers = new Set<string>()
+    typingMap.forEach((convId, usrId) => {
+        if (convId === activeId) typingUsers.add(usrId)
+    })
+
+    // Wrapper: setTyping(true) → setGlobalTyping(activeId), setTyping(false) → setGlobalTyping(null)
+    const setTyping = async (isTyping: boolean) => {
+        setGlobalTyping(isTyping ? (activeId || null) : null)
+    }
+
 
     // Derived active conversation
     const activeConversation = conversations.find(c => c.id === activeId)

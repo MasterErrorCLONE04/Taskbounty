@@ -5,16 +5,13 @@ import { X, Minus, Send, Paperclip } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
 import { getDirectMessages, sendDirectMessage } from '@/actions/messages'
 import { format } from 'date-fns'
-import { usePresence } from '@/hooks/usePresence'
+import { useGlobalPresence } from '@/context/PresenceContext'
 
 interface FloatingChatWindowProps {
     conversationId: string
     otherUser: any
     latestMessage?: any
     currentUserId?: string
-    onlineUsers: Set<string>
-    typingUsers: Set<string>
-    onTypingChangeAction: (isTyping: boolean) => Promise<void>
     onCloseAction: () => void
     onMinimizeAction: () => void
 }
@@ -24,9 +21,6 @@ export function FloatingChatWindow({
     otherUser,
     latestMessage,
     currentUserId,
-    onlineUsers,
-    typingUsers,
-    onTypingChangeAction,
     onCloseAction,
     onMinimizeAction
 }: FloatingChatWindowProps) {
@@ -36,9 +30,12 @@ export function FloatingChatWindow({
     const [isSending, setIsSending] = useState(false)
     const messagesEndRef = useRef<HTMLDivElement>(null)
 
-    // Presence integration from props
+    // Unified presence from context (online + typing)
+    const { onlineUsers, typingUsers, setTyping } = useGlobalPresence()
+
+    // Presence integration
     const isOtherUserOnline = otherUser?.id && onlineUsers.has(otherUser.id)
-    const isOtherUserTyping = otherUser?.id && typingUsers.has(otherUser.id)
+    const isOtherUserTyping = otherUser?.id && typingUsers.get(otherUser.id) === conversationId
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -81,7 +78,7 @@ export function FloatingChatWindow({
         const content = newMessage
         setNewMessage('')
         setIsSending(true)
-        onTypingChangeAction(false) // Stop typing on send
+        setTyping(null) // Stop typing on send
 
         // Optimistic update
         const tempMsg = {
@@ -110,7 +107,7 @@ export function FloatingChatWindow({
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const val = e.target.value
         setNewMessage(val)
-        onTypingChangeAction(val.length > 0)
+        setTyping(val.length > 0 ? conversationId : null)
     }
 
     return (

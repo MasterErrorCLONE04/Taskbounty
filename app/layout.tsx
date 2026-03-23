@@ -55,6 +55,8 @@ export const metadata: Metadata = {
   category: "business",
 };
 
+import { PresenceProvider } from "@/context/PresenceContext";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -68,9 +70,11 @@ export default function RootLayout({
         <JsonLd />
         <Suspense fallback={null}>
           <AuthModalProvider>
-            {/* Main Layout Provider */}
-            {children}
-            <FloatingChatSystem />
+            <PresenceProvider>
+              {/* Main Layout Provider */}
+              {children}
+              <FloatingChatSystem />
+            </PresenceProvider>
           </AuthModalProvider>
         </Suspense>
       </body>
