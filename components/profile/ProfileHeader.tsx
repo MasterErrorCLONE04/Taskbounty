@@ -7,15 +7,18 @@ import { Button } from "@/components/ui/Button"
 import { startConversation } from '@/actions/messages'
 import { followUser, unfollowUser, getFollowStatus } from '@/actions/social'
 import { createBrowserClient } from '@supabase/ssr'
+import { useAuthModal } from '@/components/auth/AuthModalContext'
 
 interface ProfileHeaderProps {
     user: any
     isOwnProfile?: boolean
-    onEdit: () => void
+    currentUserId?: string | null
+    onEditAction: () => void
 }
 
-export function ProfileHeader({ user, isOwnProfile = true, onEditAction }: { user: any, isOwnProfile?: boolean, onEditAction: () => void }) {
+export function ProfileHeader({ user, isOwnProfile = true, currentUserId, onEditAction }: ProfileHeaderProps) {
     const router = useRouter()
+    const { openLogin } = useAuthModal()
     const [isLoadingMessage, setIsLoadingMessage] = useState(false)
     const [isFollowing, setIsFollowing] = useState(false)
     const [isLoadingFollow, setIsLoadingFollow] = useState(false)
@@ -28,7 +31,9 @@ export function ProfileHeader({ user, isOwnProfile = true, onEditAction }: { use
     }, [user?.id, isOwnProfile])
 
     const handleMessage = async () => {
+        if (!currentUserId) return openLogin()
         if (!user?.id) return
+
         setIsLoadingMessage(true)
         try {
             const result = await startConversation(user.id)
@@ -43,7 +48,9 @@ export function ProfileHeader({ user, isOwnProfile = true, onEditAction }: { use
     }
 
     const handleFollow = async () => {
+        if (!currentUserId) return openLogin()
         if (!user?.id) return
+
         setIsLoadingFollow(true)
         try {
             if (isFollowing) {

@@ -22,6 +22,7 @@ export function ProfileView({ initialUser }: ProfileViewProps) {
     const [isEditOpen, setIsEditOpen] = useState(false)
     const [user, setUser] = useState<any>(initialUser || null)
     const [loading, setLoading] = useState(!initialUser)
+    const [currentUserId, setCurrentUserId] = useState<string | null>(null)
 
     // Determine if we are viewing our own profile
     // If initialUser is provided, we compare it with the auth user (fetched below)
@@ -36,6 +37,10 @@ export function ProfileView({ initialUser }: ProfileViewProps) {
     useEffect(() => {
         async function fetchData() {
             const { data: { user: authUser } } = await supabase.auth.getUser()
+            
+            if (authUser) {
+                setCurrentUserId(authUser.id)
+            }
 
             // If we have an initialUser (public view), check if it's us
             if (initialUser && authUser) {
@@ -75,6 +80,7 @@ export function ProfileView({ initialUser }: ProfileViewProps) {
             <ProfileHeader
                 user={user}
                 isOwnProfile={isOwnProfile}
+                currentUserId={currentUserId}
                 onEditAction={() => setIsEditOpen(true)}
             />
             <ProfileInfo user={user} />
