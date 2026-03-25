@@ -11,6 +11,8 @@ import StickyFooter from './_components/StickyFooter'
 import ComparisonTable from './_components/ComparisonTable'
 import BusinessBanner from './_components/BusinessBanner'
 import { getUserPlan, getUserOwnedPlans, switchUserPlan } from '@/actions/premium'
+import { supabase } from '@/lib/supabase/client'
+import { useAuthModal } from '@/components/auth/AuthModalContext'
 
 export default function PremiumPage() {
     const [billingCycle, setBillingCycle] = useState<BillingCycle>(BillingCycle.MONTHLY)
@@ -18,11 +20,19 @@ export default function PremiumPage() {
     const [currentPlanId, setCurrentPlanId] = useState<Tier | null>(null)
     const [ownedPlans, setOwnedPlans] = useState<Tier[]>([])
     const [isSwitching, setIsSwitching] = useState(false)
+    const [isAuthenticated, setIsAuthenticated] = useState(false)
+
+    const { openLogin } = useAuthModal()
 
     React.useEffect(() => {
+        // Authenticate user status
+        supabase.auth.getUser().then(({ data: { user } }) => setIsAuthenticated(!!user))
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
+            setIsAuthenticated(!!session?.user)
+        })
+
         // Fetch current active plan
         getUserPlan().then(plan => {
-            console.log('Fetched Plan:', plan)
             if (plan) {
                 setCurrentPlanId(plan)
                 setSelectedPlan(plan) // Select user's plan by default
@@ -31,9 +41,10 @@ export default function PremiumPage() {
 
         // Fetch all owned plans
         getUserOwnedPlans().then(plans => {
-            console.log('Owned Plans:', plans)
             setOwnedPlans(plans)
         })
+
+        return () => subscription.unsubscribe()
     }, [])
 
     const router = useRouter()
@@ -55,7 +66,14 @@ export default function PremiumPage() {
         }
 
         const price = currentPlan.price;
-        router.push(`/premium/checkout?plan=${selectedPlan}&cycle=${billingCycle}&price=${price}`);
+        const checkoutUrl = `/premium/checkout?plan=${selectedPlan}&cycle=${billingCycle}&price=${price}`;
+        
+        if (!isAuthenticated) {
+            openLogin(checkoutUrl);
+            return;
+        }
+
+        router.push(checkoutUrl);
     }
 
     const handleSwitchPlan = async (tier: Tier) => {

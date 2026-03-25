@@ -6,8 +6,8 @@ import { LoginModal } from './LoginModal';
 import { SignupModal } from './SignupModal';
 
 interface AuthModalContextType {
-    openLogin: () => void;
-    openSignup: () => void;
+    openLogin: (redirectUrl?: string) => void;
+    openSignup: (redirectUrl?: string) => void;
     closeModals: () => void;
 }
 
@@ -21,10 +21,16 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
 
     const [isLoginOpen, setIsLoginOpen] = useState(false);
     const [isSignupOpen, setIsSignupOpen] = useState(false);
+    const [postLoginRedirect, setPostLoginRedirect] = useState<string | null>(null);
 
     useEffect(() => {
         const login = searchParams.get('login');
         const signup = searchParams.get('signup');
+        const redirect = searchParams.get('redirect');
+
+        if (redirect) {
+            setPostLoginRedirect(redirect);
+        }
 
         if (login === 'true') {
             setIsLoginOpen(true);
@@ -35,12 +41,14 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
         }
     }, [searchParams]);
 
-    const openLogin = () => {
+    const openLogin = (redirectUrl?: string) => {
+        if (redirectUrl && typeof redirectUrl === 'string') setPostLoginRedirect(redirectUrl);
         setIsSignupOpen(false);
         setIsLoginOpen(true);
     };
 
-    const openSignup = () => {
+    const openSignup = (redirectUrl?: string) => {
+        if (redirectUrl && typeof redirectUrl === 'string') setPostLoginRedirect(redirectUrl);
         setIsLoginOpen(false);
         setIsSignupOpen(true);
     };
@@ -50,12 +58,23 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
         setIsSignupOpen(false);
 
         // Clear search params if they were used to open the modal
-        if (searchParams.get('login') || searchParams.get('signup')) {
+        if (searchParams.get('login') || searchParams.get('signup') || searchParams.get('redirect')) {
             const params = new URLSearchParams(searchParams.toString());
             params.delete('login');
             params.delete('signup');
+            params.delete('redirect');
             const queryString = params.toString();
             router.replace(pathname + (queryString ? `?${queryString}` : ''), { scroll: false });
+        }
+    };
+
+    const handleSuccess = () => {
+        closeModals();
+        if (postLoginRedirect) {
+            router.push(postLoginRedirect);
+            setPostLoginRedirect(null);
+        } else {
+            router.refresh();
         }
     };
 
@@ -66,6 +85,7 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
                 isOpen={isLoginOpen}
                 onCloseAction={closeModals}
                 onSwitchToSignupAction={openSignup}
+                onSuccessAction={handleSuccess}
             />
             <SignupModal
                 isOpen={isSignupOpen}

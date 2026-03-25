@@ -12,9 +12,10 @@ interface LoginModalProps {
     isOpen: boolean;
     onCloseAction: () => void;
     onSwitchToSignupAction: () => void;
+    onSuccessAction?: () => void;
 }
 
-export function LoginModal({ isOpen, onCloseAction, onSwitchToSignupAction }: LoginModalProps) {
+export function LoginModal({ isOpen, onCloseAction, onSwitchToSignupAction, onSuccessAction }: LoginModalProps) {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -40,12 +41,15 @@ export function LoginModal({ isOpen, onCloseAction, onSwitchToSignupAction }: Lo
 
             if (loginError) throw loginError;
 
+            // Wait a bit to ensure the session is propagated
             const { data: { user } } = await supabase.auth.getUser();
-            // Optional: Redirect based on role or just close modal/refresh
-            // const role = user?.user_metadata?.role || 'both';
 
-            router.refresh();
-            onCloseAction();
+            if (onSuccessAction) {
+                onSuccessAction();
+            } else {
+                router.refresh();
+                onCloseAction();
+            }
 
         } catch (err: any) {
             setError(err.message || 'Error al iniciar sesión');
@@ -53,6 +57,7 @@ export function LoginModal({ isOpen, onCloseAction, onSwitchToSignupAction }: Lo
             setLoading(false);
         }
     };
+
 
     return (
         <Modal isOpen={isOpen} onCloseAction={onCloseAction} title="Iniciar Sesión">
