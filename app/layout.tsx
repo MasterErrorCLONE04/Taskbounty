@@ -56,6 +56,7 @@ export const metadata: Metadata = {
 };
 
 import { PresenceProvider } from "@/context/PresenceContext";
+import { ToastProvider } from "@/components/ui/ToastProvider";
 
 export default function RootLayout({
   children,
@@ -71,9 +72,11 @@ export default function RootLayout({
         <Suspense fallback={null}>
           <AuthModalProvider>
             <PresenceProvider>
-              {/* Main Layout Provider */}
-              {children}
-              <FloatingChatSystem />
+              <ToastProvider>
+                {/* Main Layout Provider */}
+                {children}
+                <FloatingChatSystem />
+              </ToastProvider>
             </PresenceProvider>
           </AuthModalProvider>
         </Suspense>

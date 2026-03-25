@@ -3,6 +3,8 @@
 import React, { useState } from 'react'
 import { File, Download, Trash2, Clock, LucideIcon, Image, FileText, FileCode, Archive } from 'lucide-react'
 import { deleteFile, getFileUrl } from '@/actions/files'
+import { ConfirmModal } from '@/components/ui/ConfirmModal'
+import { useToast } from '@/components/ui/ToastProvider'
 
 interface TaskFile {
     id: string
@@ -21,17 +23,20 @@ interface FileGalleryProps {
 
 export default function FileGallery({ files, canDelete = false }: FileGalleryProps) {
     const [deletingId, setDeletingId] = useState<string | null>(null)
+    const [fileToDelete, setFileToDelete] = useState<string | null>(null)
+    const { toast } = useToast()
 
-    const handleDelete = async (id: string) => {
-        if (!confirm('¿Estás seguro de que quieres eliminar este archivo?')) return
-
-        setDeletingId(id)
+    const handleDeleteConfirm = async () => {
+        if (!fileToDelete) return
+        setDeletingId(fileToDelete)
         try {
-            await deleteFile(id)
+            await deleteFile(fileToDelete)
+            toast('Archivo eliminado correctamente', 'success')
         } catch (error) {
-            alert('Error al eliminar el archivo')
+            toast('Error al eliminar el archivo', 'error')
         } finally {
             setDeletingId(null)
+            setFileToDelete(null)
         }
     }
 
@@ -45,7 +50,7 @@ export default function FileGallery({ files, canDelete = false }: FileGalleryPro
             link.click()
             document.body.removeChild(link)
         } catch (error) {
-            alert('Error al descargar el archivo')
+            toast('Error al descargar el archivo', 'error')
         }
     }
 
@@ -68,56 +73,69 @@ export default function FileGallery({ files, canDelete = false }: FileGalleryPro
     if (files.length === 0) return null
 
     return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {files.map((file) => {
-                const FileIcon = getFileIcon(file.type)
-                const isDeleting = deletingId === file.id
+        <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {files.map((file) => {
+                    const FileIcon = getFileIcon(file.type)
+                    const isDeleting = deletingId === file.id
 
-                return (
-                    <div
-                        key={file.id}
-                        className="group flex items-center gap-4 bg-white border border-slate-100 p-4 rounded-3xl hover:border-sky-200 hover:shadow-lg hover:shadow-sky-500/5 transition-all"
-                    >
-                        <div className="flex-shrink-0 p-3 bg-slate-50 rounded-2xl text-slate-400 group-hover:bg-sky-50 group-hover:text-sky-500 transition-colors">
-                            <FileIcon className="w-6 h-6" />
-                        </div>
+                    return (
+                        <div
+                            key={file.id}
+                            className="group flex items-center gap-4 bg-white border border-slate-100 p-4 rounded-3xl hover:border-sky-200 hover:shadow-lg hover:shadow-sky-500/5 transition-all"
+                        >
+                            <div className="flex-shrink-0 p-3 bg-slate-50 rounded-2xl text-slate-400 group-hover:bg-sky-50 group-hover:text-sky-500 transition-colors">
+                                <FileIcon className="w-6 h-6" />
+                            </div>
 
-                        <div className="flex-grow min-w-0">
-                            <h4 className="text-sm font-bold text-slate-900 truncate mb-0.5">
-                                {file.name}
-                            </h4>
-                            <div className="flex items-center gap-3 text-[10px] font-black text-slate-400 uppercase tracking-tighter">
-                                <span>{formatSize(file.size)}</span>
-                                <span className="flex items-center gap-1">
-                                    <Clock className="w-3 h-3" />
-                                    {new Date(file.created_at).toLocaleDateString()}
-                                </span>
+                            <div className="flex-grow min-w-0">
+                                <h4 className="text-sm font-bold text-slate-900 truncate mb-0.5">
+                                    {file.name}
+                                </h4>
+                                <div className="flex items-center gap-3 text-[10px] font-black text-slate-400 uppercase tracking-tighter">
+                                    <span>{formatSize(file.size)}</span>
+                                    <span className="flex items-center gap-1">
+                                        <Clock className="w-3 h-3" />
+                                        {new Date(file.created_at).toLocaleDateString()}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button
+                                    onClick={() => handleDownload(file.path, file.name)}
+                                    className="p-2 hover:bg-sky-50 text-sky-500 rounded-xl transition-colors"
+                                    title="Descargar"
+                                >
+                                    <Download className="w-4 h-4" />
+                                </button>
+
+                                {canDelete && (
+                                    <button
+                                        onClick={() => setFileToDelete(file.id)}
+                                        disabled={isDeleting}
+                                        className="p-2 hover:bg-destructive/10 text-destructive rounded-xl transition-colors"
+                                        title="Eliminar"
+                                    >
+                                        {isDeleting ? <Clock className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                                    </button>
+                                )}
                             </div>
                         </div>
+                    )
+                })}
+            </div>
 
-                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button
-                                onClick={() => handleDownload(file.path, file.name)}
-                                className="p-2 hover:bg-sky-50 text-sky-500 rounded-xl transition-colors"
-                                title="Descargar"
-                            >
-                                <Download className="w-4 h-4" />
-                            </button>
-
-                            {canDelete && (
-                                <button
-                                    onClick={() => handleDelete(file.id)}
-                                    disabled={isDeleting}
-                                    className="p-2 hover:bg-destructive/10 text-destructive rounded-xl transition-colors"
-                                    title="Eliminar"
-                                >
-                                    {isDeleting ? <Clock className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-                                </button>
-                            )}
-                        </div>
-                    </div>
-                )
-            })}
-        </div>
+            <ConfirmModal
+                isOpen={!!fileToDelete}
+                onCloseAction={() => setFileToDelete(null)}
+                onConfirmAction={handleDeleteConfirm}
+                title="¿Eliminar archivo?"
+                description="Este archivo será eliminado permanentemente. Esta acción no se puede deshacer."
+                confirmText="Eliminar"
+                cancelText="Cancelar"
+                variant="danger"
+            />
+        </>
     )
 }
