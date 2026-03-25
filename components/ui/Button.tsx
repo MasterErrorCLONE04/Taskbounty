@@ -28,7 +28,7 @@ export function Button({
     }
 
     const sizes = {
-        sm: "px-4 py-2 text-xs uppercase tracking-widest",
+        sm: "px-4 py-2 text-xs",
         md: "px-6 py-3 text-sm",
         lg: "px-8 py-4 text-base",
         icon: "p-2.5"

@@ -205,7 +205,7 @@ export function ChatWindow({
                                     }`}>
                                     {msg.content}
                                 </div>
-                                <span className="text-[10px] text-slate-400 font-bold mx-1 uppercase">
+                                <span className="text-[10px] text-slate-400 font-bold mx-1 normal-case">
                                     {format(new Date(msg.created_at), 'h:mm a')}
                                 </span>
                             </div>

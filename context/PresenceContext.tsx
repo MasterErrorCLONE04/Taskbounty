@@ -16,7 +16,6 @@ export function PresenceProvider({ children }: { children: React.ReactNode }) {
     const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set())
     const [typingUsers, setTypingUsers] = useState<Map<string, string>>(new Map())
     const channelRef = useRef<any>(null)
-    const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
     const currentTypingConvRef = useRef<string | null>(null)
 
     // Handle Auth
@@ -77,7 +76,6 @@ export function PresenceProvider({ children }: { children: React.ReactNode }) {
         channelRef.current = globalChannel
 
         return () => {
-            if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current)
             if (channelRef.current) {
                 supabase.removeChannel(channelRef.current)
                 channelRef.current = null
@@ -89,28 +87,12 @@ export function PresenceProvider({ children }: { children: React.ReactNode }) {
     const setTyping = useCallback((conversationId: string | null) => {
         if (!channelRef.current || channelRef.current.state !== 'joined') return
 
-        // Clear existing timeout
-        if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current)
-
         currentTypingConvRef.current = conversationId
 
         channelRef.current.track({
             online_at: new Date().toISOString(),
             typing_in: conversationId
         })
-
-        // Auto-clear typing after 3 seconds of inactivity
-        if (conversationId) {
-            typingTimeoutRef.current = setTimeout(() => {
-                if (channelRef.current?.state === 'joined') {
-                    currentTypingConvRef.current = null
-                    channelRef.current.track({
-                        online_at: new Date().toISOString(),
-                        typing_in: null
-                    })
-                }
-            }, 3000)
-        }
     }, [])
 
     return (

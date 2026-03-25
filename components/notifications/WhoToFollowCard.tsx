@@ -68,12 +68,12 @@ export function WhoToFollowCard({ users }: WhoToFollowCardProps) {
                                 size="sm"
                                 onClick={() => handleFollow(userToFollow.id)}
                                 disabled={isLoading}
-                                className={`rounded-xl text-[11px] font-bold px-4 h-8 transition-all shadow-sm ${isLoading
+                                className={`rounded-xl normal-case text-[11px] font-bold px-4 h-8 transition-all shadow-sm ${isLoading
                                     ? 'bg-blue-50 text-blue-500 cursor-default shadow-none'
                                     : 'bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white active:scale-95 border border-blue-100 hover:border-blue-600'
                                     }`}
                             >
-                                {isLoading ? '...' : 'FOLLOW'}
+                                {isLoading ? '...' : 'Follow'}
                             </Button>
                         </div>
                     )

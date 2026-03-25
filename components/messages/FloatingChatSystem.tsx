@@ -18,6 +18,7 @@ export function FloatingChatSystem() {
         latestMessage?: any
         isExpanded: boolean
         isVisible: boolean
+        unreadCount: number
     }[]>([])
 
     const userRef = useRef<any>(null)
@@ -70,11 +71,13 @@ export function FloatingChatSystem() {
 
                     if (existingIndex !== -1) {
                         // Just update the latest message and show toast if not expanded
+                        const isFromOther = newMessage.sender_id !== currentUser.id
                         setActiveChats(prev => prev.map((c, i) => i === existingIndex ? {
                             ...c,
                             latestMessage: newMessage,
                             lastMessageAt: Date.now(),
-                            isVisible: c.isExpanded ? c.isVisible : (newMessage.sender_id !== currentUser.id ? true : c.isVisible)
+                            isVisible: c.isExpanded ? c.isVisible : (isFromOther ? true : c.isVisible),
+                            unreadCount: (!c.isExpanded && isFromOther) ? c.unreadCount + 1 : c.unreadCount
                         } : c))
                     } else {
                         // New conversation - check if we have room (max 3)
@@ -102,13 +105,15 @@ export function FloatingChatSystem() {
 
                         setActiveChats(prev => {
                             if (prev.length >= 3) return prev
+                            const isFromOther = newMessage.sender_id !== currentUser.id
                             return [...prev, {
                                 conversationId: conv.id,
                                 otherUser: otherUser,
                                 lastMessageAt: Date.now(),
                                 latestMessage: newMessage,
                                 isExpanded: false,
-                                isVisible: newMessage.sender_id !== currentUser.id
+                                isVisible: isFromOther,
+                                unreadCount: isFromOther ? 1 : 0
                             }]
                         })
                     }
@@ -122,7 +127,12 @@ export function FloatingChatSystem() {
     }, [user?.id, pathname])
 
     const toggleExpand = (id: string, expanded: boolean) => {
-        setActiveChats(prev => prev.map(c => c.conversationId === id ? { ...c, isExpanded: expanded, isVisible: expanded ? true : c.isVisible } : c))
+        setActiveChats(prev => prev.map(c => c.conversationId === id ? {
+            ...c,
+            isExpanded: expanded,
+            isVisible: expanded ? true : c.isVisible,
+            unreadCount: expanded ? 0 : c.unreadCount
+        } : c))
     }
 
     const closeChat = (id: string) => {
@@ -174,6 +184,11 @@ export function FloatingChatSystem() {
                                         alt={chat.otherUser.name}
                                         className="w-10 h-10 rounded-full object-cover shadow-sm"
                                     />
+                                    {chat.unreadCount > 0 && (
+                                        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-black min-w-[18px] h-[18px] rounded-full flex items-center justify-center px-1 shadow-md border-2 border-white">
+                                            +{chat.unreadCount}
+                                        </span>
+                                    )}
                                 </div>
                                 <div className="flex-1 overflow-hidden pr-2">
                                     <h3 className="text-slate-800 font-bold text-[14px] truncate max-w-[150px]">

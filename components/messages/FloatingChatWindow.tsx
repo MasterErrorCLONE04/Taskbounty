@@ -44,7 +44,7 @@ export function FloatingChatWindow({
     // React to new messages from parent
     useEffect(() => {
         if (!latestMessage) return
-        
+
         // Ensure the message belongs to this conversation
         if (latestMessage.conversation_id !== conversationId) return
 
@@ -128,7 +128,7 @@ export function FloatingChatWindow({
                             ) : (
                                 <>
                                     <div className={`w-1.5 h-1.5 rounded-full ${isOtherUserOnline ? 'bg-green-500' : 'bg-slate-300'}`}></div>
-                                    <span className="text-[10px] text-slate-400 font-bold uppercase leading-none">
+                                    <span className="text-[10px] text-slate-400 font-bold leading-none">
                                         {isOtherUserOnline ? 'Online' : 'Offline'}
                                     </span>
                                 </>
@@ -165,9 +165,8 @@ export function FloatingChatWindow({
                         const isMe = msg.sender_id === currentUserId
                         return (
                             <div key={msg.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
-                                <div className={`max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed shadow-sm ${
-                                    isMe ? 'bg-blue-600 text-white rounded-tr-none' : 'bg-white text-slate-700 rounded-tl-none border border-slate-100'
-                                }`}>
+                                <div className={`max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed shadow-sm ${isMe ? 'bg-blue-600 text-white rounded-tr-none' : 'bg-white text-slate-700 rounded-tl-none border border-slate-100'
+                                    }`}>
                                     {msg.content}
                                 </div>
                                 <span className="text-[9px] text-slate-400 font-bold mt-1 px-1">
@@ -197,9 +196,8 @@ export function FloatingChatWindow({
                     <button
                         onClick={handleSendMessage}
                         disabled={!newMessage.trim() || isSending}
-                        className={`p-1.5 rounded-lg bg-blue-600 text-white transition-all ${
-                            !newMessage.trim() || isSending ? 'opacity-50 grayscale' : 'hover:scale-105 active:scale-95 shadow-md shadow-blue-200'
-                        }`}
+                        className={`p-1.5 rounded-lg bg-blue-600 text-white transition-all ${!newMessage.trim() || isSending ? 'opacity-50 grayscale' : 'hover:scale-105 active:scale-95 shadow-md shadow-blue-200'
+                            }`}
                     >
                         <Send size={16} fill="currentColor" />
                     </button>
