@@ -1,11 +1,13 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import { ContactList } from "@/components/messages/ContactList"
 import { ChatWindow } from "@/components/messages/ChatWindow"
 import { formatDistanceToNow } from 'date-fns'
+import { es } from 'date-fns/locale'
 import { useGlobalPresence } from '@/context/PresenceContext'
+import { supabase } from '@/lib/supabase/client'
 
 interface MessagesInterfaceProps {
     initialConversations: any[]
@@ -24,6 +26,39 @@ export function MessagesInterface({ initialConversations, currentUserId }: Messa
     
     // Unified presence from context (online + typing)
     const { onlineUsers, typingUsers: typingMap, setTyping: setGlobalTyping } = useGlobalPresence()
+
+    // Real-time update for contact list last message preview
+    useEffect(() => {
+        if (!currentUserId) return
+
+        const channel = supabase.channel('messages-sidebar-updates')
+            .on(
+                'postgres_changes',
+                {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'direct_messages'
+                },
+                (payload) => {
+                    const msg = payload.new as any
+                    setConversations(prev => prev.map(conv => {
+                        if (conv.id === msg.conversation_id) {
+                            return {
+                                ...conv,
+                                lastMessage: msg.content,
+                                time: msg.created_at
+                            }
+                        }
+                        return conv
+                    }))
+                }
+            )
+            .subscribe()
+
+        return () => {
+            supabase.removeChannel(channel)
+        }
+    }, [currentUserId])
 
     // Derive a Set of users typing in the active conversation (for ChatWindow compatibility)
     const typingUsers = new Set<string>()
@@ -84,13 +119,13 @@ export function MessagesInterface({ initialConversations, currentUserId }: Messa
                 />
             ) : (
                 <div className="flex-1 flex flex-col items-center justify-center bg-slate-50 text-slate-400">
-                    <p>Select a conversation to start chatting</p>
+                    <p>Selecciona una conversación para empezar</p>
                     {isChatFullWidth && (
                         <button
                             onClick={() => setIsChatFullWidth(false)}
                             className="mt-4 text-blue-500 font-bold hover:underline"
                         >
-                            Show conversation list
+                            Mostrar lista de conversaciones
                         </button>
                     )}
                 </div>

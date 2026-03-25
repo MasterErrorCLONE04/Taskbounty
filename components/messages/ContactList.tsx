@@ -1,4 +1,5 @@
-import { Search, ChevronLeft, ChevronRight, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
+import { useState } from 'react'
+import { Search, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 
 interface Contact {
     id: string
@@ -27,14 +28,22 @@ export function ContactList({
     isCollapsed = false,
     onToggleCollapse
 }: ContactListProps) {
+    const [searchQuery, setSearchQuery] = useState('')
+
+    // Filter contacts by search query
+    const filteredContacts = contacts.filter(contact =>
+        contact.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        contact.lastMessage.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+
     return (
         <div className={`border-r border-slate-100 flex flex-col bg-white h-full transition-all duration-300 ease-in-out ${isCollapsed ? 'w-[80px]' : 'w-full md:w-[380px]'}`}>
             <div className={`p-6 pb-4 flex items-center justify-between ${isCollapsed ? 'px-4 flex-col gap-4' : 'px-6'}`}>
-                {!isCollapsed && <h1 className="text-xl font-bold text-slate-900">Messages</h1>}
+                {!isCollapsed && <h1 className="text-xl font-bold text-slate-900">Mensajes</h1>}
                 <button
                     onClick={onToggleCollapse}
                     className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-all"
-                    title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+                    title={isCollapsed ? "Expandir panel" : "Colapsar panel"}
                 >
                     {isCollapsed ? <PanelLeftOpen size={20} /> : <PanelLeftClose size={20} />}
                 </button>
@@ -46,7 +55,9 @@ export function ContactList({
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500" size={18} />
                         <input
                             type="text"
-                            placeholder="Search messages"
+                            placeholder="Buscar conversaciones..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
                             className="w-full bg-slate-100 border-none rounded-lg py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-blue-100 focus:bg-white transition-all outline-none"
                         />
                     </div>
@@ -54,12 +65,12 @@ export function ContactList({
             </div>
 
             <div className="flex-1 overflow-y-auto no-scrollbar">
-                {contacts.length === 0 ? (
+                {filteredContacts.length === 0 ? (
                     <div className="p-6 text-center text-slate-400 text-sm">
-                        {!isCollapsed && "No conversations yet."}
+                        {!isCollapsed && (searchQuery ? 'No se encontraron conversaciones' : 'No hay conversaciones aún')}
                     </div>
                 ) : (
-                    contacts.map((contact) => (
+                    filteredContacts.map((contact) => (
                         <div
                             key={contact.id}
                             onClick={() => onSelect?.(contact.id)}

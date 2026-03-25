@@ -147,17 +147,17 @@ export function FloatingChatSystem() {
     const isUIHidden = pathname === '/messages'
 
     return (
-        <div className="fixed bottom-6 right-6 z-[9999] flex flex-row-reverse items-end gap-6 pointer-events-none pr-6">
+        <div className="fixed bottom-0 right-6 z-[9999] flex flex-row-reverse items-end gap-3 pointer-events-none">
             {!isUIHidden && activeChats.map((chat) => (
-                <div key={chat.conversationId} className="pointer-events-none flex flex-col items-end gap-4">
+                <div key={chat.conversationId} className="pointer-events-none flex flex-col items-end gap-2">
                     <AnimatePresence mode="wait">
                         {chat.isExpanded ? (
                             <motion.div
                                 key={`${chat.conversationId}-expanded`}
-                                initial={{ opacity: 0, y: 20, scale: 0.9 }}
+                                initial={{ opacity: 0, y: 20, scale: 0.95 }}
                                 animate={{ opacity: 1, y: 0, scale: 1 }}
-                                exit={{ opacity: 0, y: 20, scale: 0.9 }}
-                                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                                exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                                transition={{ type: "spring", damping: 25, stiffness: 350 }}
                                 className="pointer-events-auto"
                             >
                                 <FloatingChatWindow
@@ -171,40 +171,56 @@ export function FloatingChatSystem() {
                             </motion.div>
                         ) : chat.isVisible ? (
                             <motion.div
-                                key={`${chat.conversationId}-toast`}
-                                initial={{ opacity: 0, x: 50 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0, x: 50 }}
-                                onClick={() => toggleExpand(chat.conversationId, true)}
-                                className="pointer-events-auto cursor-pointer bg-white rounded-full shadow-lg pl-1.5 pr-4 py-1.5 flex items-center gap-3 border border-slate-100/50 hover:bg-slate-50 transition-all group scale-110"
+                                key={`${chat.conversationId}-bubble`}
+                                initial={{ opacity: 0, scale: 0.5 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.5 }}
+                                transition={{ type: "spring", damping: 20, stiffness: 400 }}
+                                className="pointer-events-auto relative group mb-3"
                             >
-                                <div className="relative">
-                                    <img
-                                        src={chat.otherUser.avatar_url || "https://ui-avatars.com/api/?name=User"}
-                                        alt={chat.otherUser.name}
-                                        className="w-10 h-10 rounded-full object-cover shadow-sm"
-                                    />
-                                    {chat.unreadCount > 0 && (
-                                        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-black min-w-[18px] h-[18px] rounded-full flex items-center justify-center px-1 shadow-md border-2 border-white">
-                                            +{chat.unreadCount}
-                                        </span>
-                                    )}
-                                </div>
-                                <div className="flex-1 overflow-hidden pr-2">
-                                    <h3 className="text-slate-800 font-bold text-[14px] truncate max-w-[150px]">
-                                        {chat.otherUser.name}
-                                    </h3>
-                                </div>
-                                <div className="w-px h-6 bg-slate-100 mx-1" />
+                                {/* Close button — shows on hover */}
                                 <button
                                     onClick={(e) => {
                                         e.stopPropagation()
                                         setVisible(chat.conversationId, false)
                                     }}
-                                    className="text-slate-400 hover:text-slate-600 transition-all"
+                                    className="absolute -top-1 -right-1 w-5 h-5 bg-slate-200 hover:bg-slate-300 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all z-20 shadow-sm"
                                 >
-                                    <X size={16} />
+                                    <X size={10} strokeWidth={3} className="text-slate-600" />
                                 </button>
+
+                                {/* Avatar bubble */}
+                                <button
+                                    onClick={() => toggleExpand(chat.conversationId, true)}
+                                    className="relative cursor-pointer transition-transform hover:scale-105 active:scale-95"
+                                >
+                                    <img
+                                        src={chat.otherUser.avatar_url || "https://ui-avatars.com/api/?name=User"}
+                                        alt={chat.otherUser.name}
+                                        className="w-12 h-12 rounded-full object-cover shadow-lg ring-2 ring-white"
+                                    />
+                                    {/* Online dot */}
+                                    {onlineUsers.has(chat.otherUser.id) && (
+                                        <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
+                                    )}
+                                    {/* Unread badge */}
+                                    {chat.unreadCount > 0 && (
+                                        <span className="absolute -top-1 -left-1 bg-red-500 text-white text-[9px] font-black min-w-[18px] h-[18px] rounded-full flex items-center justify-center px-1 shadow-md border-2 border-white">
+                                            {chat.unreadCount}
+                                        </span>
+                                    )}
+                                </button>
+
+                                {/* Name tooltip on hover */}
+                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-slate-800 text-white text-[11px] font-medium px-2.5 py-1 rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-lg">
+                                    {chat.otherUser.name}
+                                    {chat.latestMessage?.content && (
+                                        <p className="text-[9px] text-slate-300 truncate max-w-[150px] mt-0.5">
+                                            {chat.latestMessage.sender_id === user?.id ? 'Tú: ' : ''}{chat.latestMessage.content}
+                                        </p>
+                                    )}
+                                    <div className="absolute top-full left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-800 rotate-45 -mt-1" />
+                                </div>
                             </motion.div>
                         ) : null}
                     </AnimatePresence>
