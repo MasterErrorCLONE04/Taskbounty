@@ -74,14 +74,14 @@ export default function ApplicationList({
             {applications.map((app) => (
                 <div
                     key={app.id}
-                    className={`bg-white border rounded-[2rem] p-6 transition-all hover:shadow-xl hover:shadow-slate-200/50 ${app.status === 'accepted'
-                        ? 'border-blue-500 ring-4 ring-blue-500/10'
-                        : 'border-slate-100'
+                    className={`bg-white border rounded-2xl p-6 transition-all ${app.status === 'accepted'
+                        ? 'border-2 border-[#0ea5e9]'
+                        : 'border-slate-200'
                         }`}
                 >
-                    <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-start justify-between mb-4">
                         <div className="flex items-center gap-4">
-                            <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-400 overflow-hidden border border-blue-100">
+                            <div className="w-12 h-12 rounded-xl bg-[#f0f9ff] flex items-center justify-center text-[#0ea5e9] overflow-hidden">
                                 {app.worker?.avatar_url ? (
                                     <img
                                         src={app.worker.avatar_url}
@@ -89,21 +89,16 @@ export default function ApplicationList({
                                         className="w-full h-full object-cover"
                                     />
                                 ) : (
-                                    <User size={28} />
+                                    <User size={24} />
                                 )}
                             </div>
                             <div>
-                                <h4 className="font-black text-slate-900 text-lg leading-tight">
+                                <h4 className="font-bold text-slate-900 text-[16px] leading-tight">
                                     {app.worker?.name || 'Trabajador'}
                                 </h4>
-                                <div className="flex items-center gap-1.5 text-orange-400 mt-1">
-                                    <Star size={14} fill="currentColor" />
-                                    <span className="text-sm font-black">{app.worker?.rating || '0.0'}</span>
-                                    {app.status === 'accepted' && (
-                                        <span className="ml-2 bg-blue-500 text-white text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest">
-                                            Aceptado
-                                        </span>
-                                    )}
+                                <div className="flex items-center gap-1.5 text-orange-500 mt-1">
+                                    <Star size={12} fill="currentColor" />
+                                    <span className="text-[13px] font-bold">{app.worker?.rating || '0.0'}</span>
                                 </div>
                             </div>
                         </div>
@@ -111,31 +106,30 @@ export default function ApplicationList({
                         {app.status === 'pending' && !isDisabled ? (
                             <button
                                 onClick={() => handleAssignClick(app)}
-                                className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 disabled:opacity-50 text-white px-6 py-3 rounded-2xl font-black text-sm transition-all shadow-lg shadow-blue-500/20 active:scale-95"
+                                className="flex items-center gap-2 bg-[#0ea5e9] hover:bg-[#0284c7] disabled:opacity-50 text-white px-5 py-2.5 rounded-xl font-bold text-[13px] transition-all active:scale-[0.98]"
                             >
                                 Asignar tarea
-                                <CheckCircle2 size={18} />
+                                <CheckCircle2 size={16} />
                             </button>
                         ) : app.status === 'accepted' ? (
-                            <div className="flex items-center gap-2 bg-green-50 text-green-600 px-6 py-3 rounded-2xl font-black text-sm border border-green-100">
-                                <Trophy size={18} />
-                                Seleccionado
+                            <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-1 bg-[#0ea5e9] text-white px-3 py-1 rounded-full font-bold text-[10px] uppercase tracking-wider">
+                                    <Trophy size={12} />
+                                    Seleccionado
+                                </div>
+                                <div className="bg-[#f0f9ff] text-[#0ea5e9] px-4 py-2.5 rounded-xl font-bold text-[13px]">
+                                    Aceptado
+                                </div>
                             </div>
-                        ) : (
-                            <div className="bg-slate-50 text-slate-400 px-6 py-3 rounded-2xl font-black text-sm border border-slate-100 opacity-50">
-                                No seleccionado
-                            </div>
-                        )}
+                        ) : null}
                     </div>
 
-                    <div className="bg-slate-50/50 rounded-2xl p-5 mb-6 border border-slate-50">
-                        <p className="text-slate-600 font-medium italic leading-relaxed">
-                            "{app.proposal_text}"
-                        </p>
-                    </div>
+                    <p className="text-slate-500 font-medium italic text-[14px] leading-relaxed mb-6 ml-1">
+                        "{app.proposal_text}"
+                    </p>
 
-                    <div className="flex items-center gap-2 text-blue-500 font-black text-[11px] uppercase tracking-wider ml-1">
-                        <Clock size={16} />
+                    <div className="flex items-center gap-1.5 text-[#0ea5e9] font-bold text-[11px] uppercase tracking-wider ml-1">
+                        <Clock size={14} />
                         <span>Entrega en: {app.estimated_time}</span>
                     </div>
                 </div>

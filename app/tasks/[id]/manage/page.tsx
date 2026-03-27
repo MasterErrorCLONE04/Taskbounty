@@ -151,31 +151,31 @@ export default async function ManageTaskPage({
                 {/* 1. Left Navigation Sidebar - Feed Style */}
                 <aside className="hidden lg:flex flex-col w-64 h-full border-r border-transparent px-2 overflow-y-auto py-6 no-scrollbar">
                     <div className="px-4 mb-8">
-                        <Link href="/" className="flex items-center gap-2 text-[14px] font-black text-slate-900 hover:text-blue-500 transition-colors group">
+                        <Link href="/" className="flex items-center gap-2 text-[14px] font-bold text-slate-900 hover:text-blue-500 transition-colors group">
                             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
                             Volver al panel
                         </Link>
                     </div>
 
                     <div className="space-y-1 px-2">
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 px-3">Navigation</p>
+                        <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-4 px-3">Navigation</p>
                         <Link
                             href={`/tasks/${id}/manage?tab=applicants`}
-                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-black text-[13px] transition-all shadow-sm ${tab === 'applicants' ? 'bg-blue-50 text-blue-600 shadow-blue-500/5' : 'text-slate-600 hover:bg-slate-50 shadow-transparent'}`}
+                            className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-[13px] transition-all ${tab === 'applicants' ? 'bg-blue-50 text-blue-600' : 'text-slate-600 hover:bg-slate-50'}`}
                         >
                             <Users size={16} />
                             Applicants
                         </Link>
                         <Link
                             href={`/tasks/${id}/manage?tab=history`}
-                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-black text-[13px] transition-all shadow-sm ${tab === 'history' ? 'bg-blue-50 text-blue-600 shadow-blue-500/5' : 'text-slate-600 hover:bg-slate-50 shadow-transparent'}`}
+                            className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-[13px] transition-all ${tab === 'history' ? 'bg-blue-50 text-blue-600' : 'text-slate-600 hover:bg-slate-50'}`}
                         >
                             <History size={16} />
                             History
                         </Link>
                         <Link
                             href={`/tasks/${id}/manage?tab=settings`}
-                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-black text-[13px] transition-all shadow-sm ${tab === 'settings' ? 'bg-blue-50 text-blue-600 shadow-blue-500/5' : 'text-slate-600 hover:bg-slate-50 shadow-transparent'}`}
+                            className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-[13px] transition-all ${tab === 'settings' ? 'bg-blue-50 text-blue-600' : 'text-slate-600 hover:bg-slate-50'}`}
                         >
                             <Settings size={16} />
                             Settings
@@ -193,16 +193,16 @@ export default async function ManageTaskPage({
                 <main className="flex-1 max-w-2xl border-x border-slate-50 h-full overflow-y-auto no-scrollbar bg-slate-50/50">
                     <div className="p-6">
                         <header className="mb-8">
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-100/50 text-blue-600 text-[10px] font-black uppercase tracking-widest">
+                            <div className="flex items-center justify-between mb-3">
+                                <span className="inline-flex items-center px-2.5 py-1 rounded bg-[#f0f9ff] text-[#0ea5e9] text-[10px] font-bold uppercase tracking-wider">
                                     Estado: {task.status}
-                                </div>
-                                <div className="flex items-center gap-1.5 text-slate-400 font-bold text-[12px] uppercase tracking-tighter">
+                                </span>
+                                <div className="flex items-center gap-1.5 text-slate-500 font-bold text-[11px] uppercase tracking-widest">
                                     <Settings size={14} />
                                     Gestión de Tarea
                                 </div>
                             </div>
-                            <h1 className="text-3xl font-black text-slate-900 tracking-tight leading-tight">
+                            <h1 className="text-[28px] font-bold text-slate-900 leading-tight">
                                 {task.title}
                             </h1>
                         </header>
@@ -210,12 +210,12 @@ export default async function ManageTaskPage({
                         <section className="space-y-6">
                             {tab === 'applicants' && (
                                 <>
-                                    <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-                                        <h2 className="text-[16px] font-black flex items-center gap-2 text-slate-900 uppercase tracking-tight">
-                                            <Users className="w-5 h-5 text-blue-500" />
+                                    <div className="flex items-center justify-between pb-6 border-b border-transparent mb-2">
+                                        <h2 className="text-[20px] font-bold flex items-center gap-3 text-slate-900 tracking-tight">
+                                            <Users className="w-6 h-6 text-blue-500" />
                                             Aplicaciones Recibidas
                                         </h2>
-                                        <span className="text-[12px] font-bold text-slate-400">
+                                        <span className="text-[13px] font-medium text-slate-500">
                                             {applications?.length || 0} postulantes
                                         </span>
                                     </div>
@@ -244,48 +244,49 @@ export default async function ManageTaskPage({
                 {/* 3. Right Sidebar: Info Widgets Style */}
                 <aside className="hidden lg:flex flex-col w-80 h-full border-l border-transparent px-4 overflow-y-auto py-6 no-scrollbar">
                     <div className="space-y-4">
-                        <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm shadow-slate-200/50">
-                            <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-6">Detalles de Tarea</h3>
-
-                            <div className="space-y-6">
-                                <div className="flex items-center gap-4">
-                                    <div className="p-3 bg-green-50 rounded-2xl">
-                                        <DollarSign className="w-6 h-6 text-green-500 font-bold" />
-                                    </div>
-                                    <div>
-                                        <span className="text-[10px] text-slate-400 block font-black uppercase tracking-tight mb-0.5">Bounty en Escrow</span>
-                                        <span className="text-2xl font-black text-slate-900">${task.bounty_amount}</span>
-                                    </div>
+                        <div>
+                            <h3 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-3 ml-1">Detalles Económicos</h3>
+                            <div className="bg-white border border-slate-100 rounded-2xl p-5 flex items-center gap-4">
+                                <div className="p-3 bg-green-50 rounded-xl">
+                                    <DollarSign className="w-5 h-5 text-green-500" />
                                 </div>
-
-                                <div className="flex items-center gap-4">
-                                    <div className="p-3 bg-blue-50 rounded-2xl">
-                                        <Clock className="w-6 h-6 text-blue-500" />
-                                    </div>
-                                    <div>
-                                        <span className="text-[10px] text-slate-400 block font-black uppercase tracking-tight mb-0.5">Deadline Final</span>
-                                        <span className="text-md font-black text-slate-900">{new Date(task.deadline).toLocaleDateString()}</span>
-                                    </div>
+                                <div>
+                                    <span className="text-[10px] text-slate-400 block font-bold uppercase tracking-wider mb-0.5">Bounty en Escrow</span>
+                                    <span className="text-xl font-bold text-slate-900">${task.bounty_amount}</span>
                                 </div>
                             </div>
-
-                            {isAssigned && (
-                                <div className="mt-8 pt-6 border-t border-slate-50">
-                                    <Link href={`/tasks/${id}/work`} className="w-full flex items-center justify-center gap-2 py-3 bg-blue-500 hover:bg-blue-600 text-white font-black text-[13px] rounded-full shadow-lg shadow-blue-500/20 transition-all active:scale-95">
-                                        <Briefcase className="w-4 h-4" />
-                                        Sala de trabajo
-                                    </Link>
-                                </div>
-                            )}
                         </div>
 
+                        <div>
+                            <h3 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-3 ml-1 mt-6">Detalles de Tiempo</h3>
+                            <div className="bg-white border border-slate-100 rounded-2xl p-5 flex items-center gap-4">
+                                <div className="p-3 bg-blue-50 rounded-xl">
+                                    <Clock className="w-5 h-5 text-blue-500" />
+                                </div>
+                                <div>
+                                    <span className="text-[10px] text-slate-400 block font-bold uppercase tracking-wider mb-0.5">Deadline Final</span>
+                                    <span className="text-xl font-bold text-slate-900">{new Date(task.deadline).toLocaleDateString()}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {isAssigned && (
+                            <div className="mt-8">
+                                <h3 className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-3 ml-1">Trabajador Asignado</h3>
+                                <Link href={`/tasks/${id}/work`} className="w-full flex items-center justify-center gap-2 py-3 bg-[#f0f9ff] text-[#0ea5e9] hover:bg-blue-100 font-bold text-[13px] rounded-xl transition-all active:scale-[0.98]">
+                                    <Briefcase className="w-4 h-4" />
+                                    Ir a sala de trabajo &rarr;
+                                </Link>
+                            </div>
+                        )}
+
                         <div className="px-6 py-4">
-                            <div className="flex gap-4 text-xs font-bold text-slate-300">
+                            <div className="flex gap-4 text-xs font-medium text-slate-500">
                                 <Link href="#" className="hover:text-blue-500 transition-colors">Terms</Link>
                                 <Link href="#" className="hover:text-blue-500 transition-colors">Privacy</Link>
                                 <Link href="#" className="hover:text-blue-500 transition-colors">Help</Link>
                             </div>
-                            <p className="text-[11px] text-slate-200 font-bold mt-2">© 2024 TaskBounty</p>
+                            <p className="text-[11px] text-slate-500 font-medium mt-2">© 2024 TaskBounty</p>
                         </div>
                     </div>
                 </aside>

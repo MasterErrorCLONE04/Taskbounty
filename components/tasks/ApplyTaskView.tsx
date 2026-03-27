@@ -87,32 +87,45 @@ export function ApplyTaskView({ taskId }: { taskId: string }) {
 
     if (success) {
         return (
-            <div className="flex flex-col items-center justify-center pt-20 px-6 animate-in fade-in zoom-in-95 duration-500">
-                <div className="w-24 h-24 bg-blue-500 rounded-full flex items-center justify-center mb-8 shadow-xl shadow-blue-500/30">
-                    <CheckCircle2 className="w-12 h-12 text-white" />
+            <div className="flex flex-col items-center justify-center w-full min-h-[calc(100vh-100px)] py-12 px-6 animate-in fade-in zoom-in-95 duration-500 relative">
+                <div className="flex-1 flex flex-col items-center justify-center -mt-20">
+                    <div className="w-24 h-24 bg-[#f0f9ff] rounded-full flex items-center justify-center mb-6">
+                        <div className="w-16 h-16 bg-[#0ea5e9] rounded-full flex items-center justify-center shadow-md shadow-blue-500/20">
+                            <CheckCircle2 className="w-8 h-8 text-white" />
+                        </div>
+                    </div>
+
+                    <h1 className="text-[28px] font-bold text-slate-900 mb-4 text-center tracking-tight">
+                        ¡Propuesta enviada con éxito!
+                    </h1>
+
+                    <p className="text-slate-500 text-center max-w-md text-[15px] leading-relaxed mb-10 font-medium">
+                        Tu propuesta para <span className="font-bold text-slate-900">"{task.title}"</span> ha sido entregada. El cliente la revisará y te notificaremos si eres seleccionado.
+                    </p>
+
+                    <div className="flex flex-col gap-4 w-full max-w-[320px]">
+                        <Link
+                            href="/my-applications"
+                            className="w-full py-3.5 bg-[#0ea5e9] hover:bg-[#0284c7] text-white font-bold text-[14px] rounded-full text-center transition-all active:scale-[0.98]"
+                        >
+                            Ver mis aplicaciones
+                        </Link>
+                        <Link
+                            href="/"
+                            className="w-full py-3.5 bg-white border border-slate-200 text-slate-900 hover:border-slate-300 font-bold text-[14px] rounded-full text-center transition-all active:scale-[0.98]"
+                        >
+                            Volver al inicio
+                        </Link>
+                    </div>
                 </div>
 
-                <h1 className="text-3xl font-black text-slate-900 mb-4 text-center tracking-tight">
-                    ¡Propuesta enviada con éxito!
-                </h1>
-
-                <p className="text-slate-500 text-center max-w-md text-lg leading-relaxed mb-12">
-                    Tu propuesta para <span className="font-bold text-slate-900">"{task.title}"</span> ha sido entregada correctamente. Te notificaremos cuando el cliente la revise.
-                </p>
-
-                <div className="flex flex-col gap-4 w-full max-w-xs">
-                    <Link
-                        href="/my-applications"
-                        className="w-full py-4 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-2xl text-center transition-all shadow-lg shadow-blue-500/20 active:scale-95"
-                    >
-                        Ver mis aplicaciones
-                    </Link>
-                    <Link
-                        href="/"
-                        className="w-full py-4 bg-white border border-slate-200 text-slate-700 hover:text-slate-900 hover:border-slate-300 font-bold rounded-2xl text-center transition-all active:scale-95"
-                    >
-                        Volver al inicio
-                    </Link>
+                {/* Footer links */}
+                <div className="absolute bottom-8 flex gap-6 text-[11px] font-medium text-slate-500">
+                    <Link href="#" className="hover:text-blue-500 transition-colors">Términos</Link>
+                    <Link href="#" className="hover:text-blue-500 transition-colors">Privacidad</Link>
+                    <Link href="#" className="hover:text-blue-500 transition-colors">Cookies</Link>
+                    <Link href="#" className="hover:text-blue-500 transition-colors">Accesibilidad</Link>
+                    <span>© 2024 TaskBounty</span>
                 </div>
             </div>
         )

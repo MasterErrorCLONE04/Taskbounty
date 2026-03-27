@@ -48,19 +48,17 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({ activities }) => {
 
     return (
         <div className="flex flex-col gap-6">
-            <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-3">
-                    <History size={22} className="text-blue-500" />
-                    <h2 className="font-black text-slate-900 text-xl tracking-tight">Historial de Actividad</h2>
-                </div>
+            <div className="flex items-center gap-3 mb-4 pb-4 border-b border-slate-50">
+                <History size={20} className="text-blue-500" />
+                <h2 className="font-bold text-slate-900 text-[20px] tracking-tight">Historial de Actividad</h2>
             </div>
 
-            <div className="relative pl-4 space-y-12">
+            <div className="relative pl-2 space-y-10 mt-2">
                 {/* Vertical Timeline Line */}
-                <div className="absolute left-[31px] top-4 bottom-4 w-0.5 bg-slate-100"></div>
+                <div className="absolute left-[23px] top-4 bottom-4 w-px bg-slate-200"></div>
 
                 {activities.length === 0 ? (
-                    <div className="py-10 text-center text-slate-400 font-bold">
+                    <div className="py-10 text-center text-slate-500 font-medium text-[14px]">
                         No hay actividad registrada aún.
                     </div>
                 ) : (
@@ -68,12 +66,12 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({ activities }) => {
                         const style = getIconInfo(activity.type)
                         return (
                             <div key={activity.id} className="relative flex items-center gap-6 group">
-                                <div className={`z-10 w-10 h-10 rounded-full ${style.bgColor} flex items-center justify-center ${style.iconColor} border-4 border-white shadow-sm ring-1 ring-slate-100 transition-transform group-hover:scale-110`}>
+                                <div className={`z-10 w-8 h-8 rounded-full ${style.bgColor} flex items-center justify-center ${style.iconColor} ring-[6px] ring-white`}>
                                     {style.icon}
                                 </div>
-                                <div className="flex flex-col">
-                                    <span className="font-bold text-slate-900 leading-none mb-1.5">{activity.title}</span>
-                                    <span className="text-[12px] text-slate-400 font-bold uppercase tracking-tight">
+                                <div className="flex flex-col gap-1">
+                                    <span className="font-bold text-[15px] text-slate-900 leading-none">{activity.title}</span>
+                                    <span className="text-[13px] text-slate-500 font-medium">
                                         {activity.time}
                                     </span>
                                 </div>

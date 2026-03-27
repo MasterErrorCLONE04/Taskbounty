@@ -1,10 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import type { Metadata } from 'next'
-import { getProfile, getRightSidebarData } from '@/actions/profile'
+import { getProfile } from '@/actions/profile'
 import { getComments } from '@/actions/social'
 import { TopNavbar } from '@/components/layout/TopNavbar'
-import { LeftSidebar } from '@/components/layout/LeftSidebar'
-import { RightSidebar } from '@/components/layout/RightSidebar'
 import { BountyCard } from '@/components/feed/BountyCard'
 import { CommentSection } from '@/components/tasks/CommentSection'
 import { notFound } from 'next/navigation'
@@ -144,21 +142,16 @@ export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
         is_liked: isLiked
     }
 
-    // Fetch Sidebar Data
-    const sidebarData = await getRightSidebarData()
-
     return (
         <div className="h-screen bg-white flex flex-col overflow-hidden">
             <TopNavbar user={user} profile={profile} />
 
-            <div className="flex-1 flex justify-center overflow-hidden">
+            <div className="flex-1 flex justify-center overflow-hidden bg-slate-50/30">
                 <script
                     type="application/ld+json"
                     dangerouslySetInnerHTML={{ __html: JSON.stringify(taskJsonLd) }}
                 />
-                <LeftSidebar user={profile || user} sidebarData={sidebarData} />
-
-                <main className="flex-1 max-w-6xl border-x border-slate-50 h-full overflow-y-auto no-scrollbar bg-white">
+                <main className="w-full max-w-7xl border-x border-slate-100 shadow-sm shadow-slate-100/50 h-full overflow-y-auto no-scrollbar bg-white">
                     {/* Header Nav */}
                     <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-slate-100 px-8 py-4 flex items-center justify-between">
                         <Link href="/" className="flex items-center gap-2 text-sm font-bold text-slate-600 hover:text-slate-900 transition-colors group">
