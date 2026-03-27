@@ -31,6 +31,7 @@ interface CreateGroupModalProps {
 export function CreateGroupModal({ isOpen, onCloseAction }: CreateGroupModalProps) {
     const [error, setError] = useState<string | null>(null)
     const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
+    const [avatarFile, setAvatarFile] = useState<File | null>(null)
 
     // Handle form submission
     async function handleSubmit(formData: FormData) {
@@ -45,14 +46,37 @@ export function CreateGroupModal({ isOpen, onCloseAction }: CreateGroupModalProp
         }
     }
 
-    // Handle avatar change (mock for now, ideally upload to storage)
+    // Generate local preview (purely visual feedback — the actual File is sent in FormData)
     const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
-        if (file) {
-            const objectUrl = URL.createObjectURL(file)
-            setAvatarPreview(objectUrl)
-            // In a real app, you'd upload here and set hidden input value
+        if (!file) return
+
+        // Client-side validation feedback
+        if (!file.type.startsWith('image/')) {
+            setError('Solo se permiten imágenes.')
+            e.target.value = ''
+            return
         }
+        if (file.size > 2 * 1024 * 1024) {
+            setError('La imagen no puede superar 2 MB.')
+            e.target.value = ''
+            return
+        }
+
+        setError(null)
+        setAvatarFile(file)
+
+        // Local object URL just for the visual preview — never sent to the server
+        const previewUrl = URL.createObjectURL(file)
+        if (avatarPreview) URL.revokeObjectURL(avatarPreview) // clean up previous
+        setAvatarPreview(previewUrl)
+    }
+
+    const handleRemoveAvatar = (e: React.MouseEvent) => {
+        e.stopPropagation()
+        if (avatarPreview) URL.revokeObjectURL(avatarPreview)
+        setAvatarPreview(null)
+        setAvatarFile(null)
     }
 
     return (
@@ -64,8 +88,8 @@ export function CreateGroupModal({ isOpen, onCloseAction }: CreateGroupModalProp
                 </div>
 
                 <form action={handleSubmit} className="space-y-6">
-                    {/* Avatar Upload */}
-                    <div className="flex justify-center mb-6">
+                    {/* Avatar Upload — the file input is named "avatar" so it arrives in FormData */}
+                    <div className="flex flex-col items-center gap-2 mb-6">
                         <div className="relative group cursor-pointer">
                             <div className="w-24 h-24 rounded-2xl bg-slate-100 border-2 border-dashed border-slate-300 flex items-center justify-center overflow-hidden transition-all group-hover:border-indigo-400 group-hover:bg-indigo-50">
                                 {avatarPreview ? (
@@ -74,17 +98,31 @@ export function CreateGroupModal({ isOpen, onCloseAction }: CreateGroupModalProp
                                     <Upload className="text-slate-400 group-hover:text-indigo-500" size={32} />
                                 )}
                             </div>
+
+                            {/* Remove button */}
+                            {avatarPreview && (
+                                <button
+                                    type="button"
+                                    onClick={handleRemoveAvatar}
+                                    className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white shadow-md hover:bg-red-600 transition-colors"
+                                    aria-label="Remove avatar"
+                                >
+                                    <X size={12} />
+                                </button>
+                            )}
+
+                            {/* Real file input — named "avatar" — will be sent in FormData */}
                             <input
                                 type="file"
-                                name="avatar" // This needs handling in server action if we support file upload
+                                name="avatar"
                                 accept="image/*"
                                 className="absolute inset-0 opacity-0 cursor-pointer"
                                 onChange={handleAvatarChange}
                             />
-                            {/* Hidden input to pass avatar URL if handled elsewhere or mock */}
-                            <input type="hidden" name="avatar_url" value={avatarPreview || ''} />
-                            <p className="text-xs text-center mt-2 text-slate-500 font-medium">Group Icon</p>
                         </div>
+                        <p className="text-xs text-center text-slate-500 font-medium">
+                            Group Icon <span className="text-slate-400">(max 2 MB)</span>
+                        </p>
                     </div>
 
                     <div className="space-y-4">

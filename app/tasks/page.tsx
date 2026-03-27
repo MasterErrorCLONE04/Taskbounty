@@ -16,14 +16,15 @@ export default async function TasksPage() {
     const profile = await getProfile(user.id)
     const sidebarData = await getRightSidebarData()
 
-    // Fetch assigned tasks (My Work)
+    // Fetch tasks created by the user or assigned to the user
     const { data: tasks, error } = await supabase
         .from('tasks')
         .select(`
             *,
-            client:users!client_id(name, avatar_url)
+            client:users!client_id(name, avatar_url),
+            worker:users!assigned_worker_id(name, avatar_url)
         `)
-        .eq('assigned_worker_id', user.id)
+        .or(`client_id.eq.${user.id},assigned_worker_id.eq.${user.id}`)
         .order('updated_at', { ascending: false })
 
     if (error) {
@@ -31,19 +32,27 @@ export default async function TasksPage() {
     }
 
     // Map tasks to TaskItemProps
-    const formattedTasks: TaskItemProps[] = (tasks || []).map((t: any) => ({
-        id: t.id,
-        taskId: `#BT-${t.id.slice(0, 4).toUpperCase()}`,
-        status: t.status,
-        title: t.title,
-        personType: 'Client',
-        personName: t.client?.name || 'Unknown Client',
-        personAvatar: t.client?.avatar_url || '',
-        amount: t.bounty_amount,
-        currency: t.currency || 'USD',
-        escrowActive: ['IN_PROGRESS', 'ASSIGNED', 'SUBMITTED', 'DISPUTED'].includes(t.status),
-        actions: ['View Details'] // Placeholder, actions could be dynamic based on status
-    }))
+    const formattedTasks: TaskItemProps[] = (tasks || []).map((t: any) => {
+        const isClient = t.client_id === user.id;
+
+        return {
+            id: t.id,
+            taskId: `#BT-${t.id.slice(0, 4).toUpperCase()}`,
+            status: t.status,
+            title: t.title,
+            personType: isClient ? 'Hunter' : 'Client',
+            personName: isClient 
+                ? (t.worker?.name || 'Waiting for Applicants') 
+                : (t.client?.name || 'Unknown Client'),
+            personAvatar: isClient 
+                ? (t.worker?.avatar_url || '') 
+                : (t.client?.avatar_url || ''),
+            amount: t.bounty_amount,
+            currency: t.currency || 'USD',
+            escrowActive: ['IN_PROGRESS', 'ASSIGNED', 'SUBMITTED', 'DISPUTED'].includes(t.status),
+            actions: ['View Details']
+        };
+    })
 
     return (
         <div className="h-screen bg-white flex flex-col overflow-hidden">

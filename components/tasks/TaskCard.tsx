@@ -21,8 +21,9 @@ export function TaskCard({ task }: { task: TaskItemProps }) {
     // Helper for status colors
     const getStatusColor = (status: string) => {
         const s = status.toUpperCase();
-        if (['IN PROGRESS', 'IN_PROGRESS', 'ASSIGNED'].includes(s)) return 'bg-yellow-100 text-yellow-700';
-        if (['REVIEWING', 'SUBMITTED'].includes(s)) return 'bg-blue-100 text-blue-700';
+        if (['OPEN'].includes(s)) return 'bg-slate-100 text-slate-700';
+        if (['IN PROGRESS', 'IN_PROGRESS', 'ASSIGNED'].includes(s)) return 'bg-blue-100 text-blue-700'; // Usually assigned is blue
+        if (['REVIEWING', 'SUBMITTED'].includes(s)) return 'bg-yellow-100 text-yellow-700'; // Under review is yellow/warning
         if (['DISPUTED'].includes(s)) return 'bg-rose-100 text-rose-700';
         return 'bg-green-100 text-green-700'; // COMPLETED, ESCROW ACTIVE, etc.
     }

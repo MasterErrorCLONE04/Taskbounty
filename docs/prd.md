@@ -18,7 +18,6 @@ El análisis del código revela múltiples áreas "mockeadas" o con comentarios 
 *   **Notificaciones:** 
     *   La lógica para pestañas de notificaciones (`NotificationsFeed.tsx`) no filtra datos reales de la base de datos de manera óptima todavía.
     *   La acción de enviar notificación de aplicación a un cliente (`applications.ts`) solo tiene el comentario simulando la acción.
-*   **Manejo de Archivos e Imágenes:** La subida de avatares para grupos (`CreateGroupModal.tsx`) todavía no se conecta a Supabase Storage.
 *   **Suscripción Premium:** La ruta de la acción `upgradeToPremium` devuelve un éxito simulado o una redirección sin completar el flujo de Stripe Checkout para suscripciones.
 
 ---
@@ -33,8 +32,8 @@ El análisis del código revela múltiples áreas "mockeadas" o con comentarios 
 
 ## 🗑️ 3. Funcionalidades que se deberían eliminar (o posponer para V2)
 Para garantizar un lanzamiento exitoso y con menos deuda técnica, el proyecto debería recortar "grasa" y enfocarse en su propuesta de valor. Se recomienda deshabilitar temporalmente o eliminar las siguientes rutas/características:
+*   **Diferenciación de `/tasks` vs `/jobs`:** Actualmente puede generar confusión si no se explica bien. Necesitamos consolidar que `/tasks` funciona como el **Dashboard de Gestión** (las tareas que he creado, que estoy realizando, las que están pendientes, completadas o en disputa). Por el contrario, `/app/jobs` (o el feed de inicio) es el **Marketplace/Bolsa de Trabajo** donde los usuarios buscan nuevos Bounties a los cuales postularse. Se debe pulir la funcionalidad del dashboard de `/tasks` para que refleje ambos roles (Cliente/Freelancer).
 *   **Grupos y Eventos (`/app/groups`, `/app/events`):** Construir una comunidad es difícil. Actualmente, la página de eventos solo dice "Coming Soon" y crear grupos distrae del objetivo de conectar clientes con freelancers.
-*   **Bolsa de Trabajo (`/app/jobs`):** Genera confusión con el modelo central de *tareas/bounties*. Si las "tareas" son entregables únicos, tener además "empleos" bifurca la liquidez del mercado temprano.
 *   **Hashtags (`/app/hashtags`):** Es una funcionalidad social de bajo valor en la etapa inicial comparado con una buena categorización de tareas.
 *   **Soporte Multi-Wallet Web3 (MetaMask, etc.):** El sistema ya soporta depósitos fiduciarios por Stripe. Añadir criptografía/Web3 simultáneamente triplica la carga legal, contable y de seguridad.
 
