@@ -20,8 +20,8 @@ export function PremiumPromo({ isPremium = false }: PremiumPromoProps) {
                     </p>
 
                     <Link href="/premium">
-                        <div className="inline-flex items-center gap-2 bg-[#1C190D] hover:bg-black text-[#FDE6A6] px-8 py-3 rounded-full font-bold uppercase tracking-wider text-sm transition-all active:scale-95">
-                            <CheckCircle2 size={18} />
+                        <div className="inline-flex w-fit items-center gap-3 bg-[#1C190D] hover:bg-black text-[#FDE6A6] px-6 py-3.5 rounded-full font-bold uppercase tracking-wider text-sm transition-all active:scale-95 whitespace-nowrap shadow-md">
+                            <CheckCircle2 size={18} className="shrink-0" />
                             <span>Active Plan</span>
                         </div>
                     </Link>
@@ -44,7 +44,7 @@ export function PremiumPromo({ isPremium = false }: PremiumPromoProps) {
                 </p>
 
                 <Link href="/premium">
-                    <button className="bg-[#1C190D] hover:bg-black text-[#FDE6A6] px-8 py-4 rounded-full font-extrabold uppercase tracking-wider text-sm transition-all active:scale-95 shadow-lg shadow-black/10">
+                    <button className="w-fit whitespace-nowrap bg-[#1C190D] hover:bg-black text-[#FDE6A6] px-8 py-3.5 rounded-full font-extrabold uppercase tracking-wider text-sm transition-all active:scale-95 shadow-lg shadow-black/10">
                         Learn More
                     </button>
                 </Link>
