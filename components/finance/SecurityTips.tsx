@@ -13,9 +13,9 @@ export function SecurityTips() {
                     <div className="flex gap-3">
                         <Key className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
                         <div>
-                            <p className="font-bold text-slate-900 text-sm mb-1">Protect private keys.</p>
+                            <p className="font-bold text-slate-900 text-sm mb-1">Use strong passwords.</p>
                             <p className="text-xs text-slate-500 leading-relaxed">
-                                Never share your seed phrase or private keys with anyone, including TaskBounty staff.
+                                Never share your TaskBounty password or 2FA codes with anyone.
                             </p>
                         </div>
                     </div>
@@ -25,7 +25,7 @@ export function SecurityTips() {
                         <div>
                             <p className="font-bold text-slate-900 text-sm mb-1">Verify domains.</p>
                             <p className="text-xs text-slate-500 leading-relaxed">
-                                Ensure you are on taskbounty.com before connecting your wallet.
+                                Ensure you are on taskbounty.com before connecting your banking details.
                             </p>
                         </div>
                     </div>
@@ -33,18 +33,18 @@ export function SecurityTips() {
                     <div className="flex gap-3">
                         <Shield className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />
                         <div>
-                            <p className="font-bold text-slate-900 text-sm mb-1">Hardware wallets.</p>
+                            <p className="font-bold text-slate-900 text-sm mb-1">Secure Network.</p>
                             <p className="text-xs text-slate-500 leading-relaxed">
-                                For large balances, we recommend using a hardware wallet for maximum security.
+                                We recommend using a private, secure network when managing financial information.
                             </p>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* Wallet Support */}
+            {/* Account Support */}
             <div>
-                <h3 className="font-black text-slate-900 text-lg mb-6">Wallet Support</h3>
+                <h3 className="font-black text-slate-900 text-lg mb-6">Account Support</h3>
 
                 <div className="space-y-6">
                     <Link href="#" className="flex items-center gap-3 text-sm font-bold text-slate-600 hover:text-blue-500 transition-colors group">
@@ -57,7 +57,7 @@ export function SecurityTips() {
                         <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center group-hover:bg-blue-100 transition-colors">
                             <BookOpen className="w-4 h-4 text-blue-500" />
                         </div>
-                        Connecting a Wallet Guide
+                        Connecting an Account Guide
                     </Link>
                     <Link href="#" className="flex items-center gap-3 text-sm font-bold text-slate-600 hover:text-blue-500 transition-colors group">
                         <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center group-hover:bg-blue-100 transition-colors">

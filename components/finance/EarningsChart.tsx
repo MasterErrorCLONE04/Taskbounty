@@ -19,15 +19,15 @@ export function EarningsChart({ data }: EarningsChartProps) {
                 {data.map((item, index) => {
                     const heightPercentage = (item.amount / maxAmount) * 100
                     return (
-                        <div key={index} className="flex-1 flex flex-col items-center gap-3 group">
+                        <div key={index} className="flex-1 flex flex-col items-center justify-end gap-3 group h-full">
                             <div className="relative w-full flex justify-center items-end h-full">
                                 <div
-                                    className="w-full max-w-[40px] bg-blue-100 rounded-t-lg transition-all duration-500 group-hover:bg-blue-500"
-                                    style={{ height: `${heightPercentage}%` }}
+                                    className={`relative w-full max-w-[48px] rounded-t-xl transition-all duration-700 ${item.amount > 0 ? 'bg-emerald-500 shadow-lg shadow-emerald-500/20' : 'bg-slate-100'} group-hover:opacity-90`}
+                                    style={{ height: `${item.amount > 0 ? Math.max(heightPercentage, 12) : 2}%` }}
                                 >
                                     {/* Tooltip */}
-                                    <div className="opacity-0 group-hover:opacity-100 absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[10px] font-bold py-1 px-2 rounded-md transition-opacity whitespace-nowrap pointer-events-none">
-                                        ${item.amount.toLocaleString()}
+                                    <div className="opacity-0 group-hover:opacity-100 absolute -top-12 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-xs font-black py-1.5 px-3 rounded-lg transition-all duration-200 whitespace-nowrap pointer-events-none shadow-xl">
+                                        ${item.amount.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                                     </div>
                                 </div>
                             </div>

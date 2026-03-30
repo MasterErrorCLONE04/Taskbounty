@@ -60,6 +60,28 @@ export async function createStripeAccountLink() {
 }
 
 /**
+ * Creates a login link to the Stripe Express Dashboard
+ */
+export async function createStripeDashboardLink() {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('Unauthorized')
+
+    const { data: profile } = await supabase
+        .from('users')
+        .select('stripe_connect_id')
+        .eq('id', user.id)
+        .single()
+
+    if (!profile?.stripe_connect_id) {
+        throw new Error('No Stripe Connect account found.')
+    }
+
+    const loginLink = await stripe.accounts.createLoginLink(profile.stripe_connect_id)
+    return loginLink.url
+}
+
+/**
  * Executes a withdrawal from the user's TaskBounty balance to their Stripe account
  */
 export async function executeWithdrawal(amount: number) {
@@ -140,6 +162,15 @@ export async function executeWithdrawal(amount: number) {
                 stripe_transfer_id: transfer.id
             })
             .eq('id', withdrawal.id)
+            
+        // 6. Notify user of successful transfer
+        await adminSupabase.rpc('create_notification', {
+            target_user: user.id,
+            notif_type: 'withdrawal',
+            notif_title: 'Retiro en Camino',
+            notif_message: `Tu retiro de $${amount.toFixed(2)} USD ha sido procesado exitosamente hacia tu cuenta bancaria conectada.`,
+            notif_link: '/wallet'
+        })
 
         revalidatePath('/')
         return { success: true, transferId: transfer.id }

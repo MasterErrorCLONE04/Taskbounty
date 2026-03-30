@@ -43,7 +43,7 @@ export function TransactionHistory({ transactions }: TransactionHistoryProps) {
                                         {tx.status}
                                     </div>
                                     <p className="font-black text-slate-900 text-sm">
-                                        -${tx.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })} <span className="text-[10px] text-slate-400">USDC</span>
+                                        -${tx.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })} <span className="text-[10px] text-slate-400">USD</span>
                                     </p>
                                 </div>
                             </div>

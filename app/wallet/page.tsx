@@ -69,20 +69,23 @@ export default async function WalletPage() {
 
     const availableBalance = balanceData?.available_balance || 0
 
-    // Prepare Chart Data (Mocking reasonable distribution for now based on completedTasks if we had timestamps)
-    // For V1, we'll map actual completed tasks to months if available, or show mock data if empty to look good
-    const chartData = [
-        { month: 'JUN', amount: 0 },
-        { month: 'JUL', amount: 0 },
-        { month: 'AUG', amount: 0 },
-        { month: 'SEP', amount: 0 },
-        { month: 'OCT', amount: 0 },
-        { month: 'NOV', amount: 0 },
-    ]
+    // Generate last 6 months dynamically for Earnings Chart
+    const getPast6Months = () => {
+        const result = []
+        for (let i = 5; i >= 0; i--) {
+            const d = new Date()
+            d.setDate(1) // Imprescindible para evitar el bug del día 31 que salta a marzo dos veces
+            d.setMonth(d.getMonth() - i)
+            const monthShort = d.toLocaleDateString('en-US', { month: 'short' }).toUpperCase()
+            result.push({ month: monthShort, amount: 0 })
+        }
+        return result
+    }
 
-    // Basic aggregation if we have dates
+    const chartData = getPast6Months()
+
+    // Basic aggregation for chart
     if (completedTasks && completedTasks.length > 0) {
-        // This is a naive implementation, ideally done in SQL
         completedTasks.forEach(task => {
             const date = new Date(task.updated_at)
             const monthShort = date.toLocaleDateString('en-US', { month: 'short' }).toUpperCase()
@@ -94,15 +97,27 @@ export default async function WalletPage() {
     }
 
     // Merge Activity (Withdrawals + Recent Earnings)
-    // For MVP mainly showing withdrawals as activity
-    const activities = (withdrawals || []).map(w => ({
+    const withdrawalActivities = (withdrawals || []).map(w => ({
         id: w.id,
         type: 'WITHDRAWAL' as const,
-        title: 'Withdrawal to Stripe',
+        title: 'Withdrawal to Bank/Stripe',
         date: w.created_at,
         amount: w.amount,
         status: w.status
     }))
+
+    const earningActivities = (completedTasks || []).map((t, index) => ({
+        id: `earn-${index}`,
+        type: 'PAYMENT' as const,
+        title: 'Bounty Earned',
+        date: t.updated_at,
+        amount: Number(t.bounty_amount),
+        status: 'COMPLETED' as const
+    }))
+
+    const activities = [...withdrawalActivities, ...earningActivities]
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        .slice(0, 10) // Show up to 10 latest activities
 
     return (
         <div className="h-screen bg-slate-50/50 flex flex-col overflow-hidden">
@@ -133,13 +148,10 @@ export default async function WalletPage() {
                                     <span className="text-5xl font-black text-slate-900 tracking-tight">
                                         ${availableBalance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                                     </span>
-                                    <span className="text-xl font-black text-slate-400">USDC</span>
+                                    <span className="text-xl font-black text-slate-400">USD</span>
                                 </div>
                                 <div className="flex justify-center gap-4">
-                                    <button className="bg-[#0095ff] hover:bg-[#0080db] text-white px-8 py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-500/20 active:scale-95">
-                                        Deposit
-                                    </button>
-                                    <Link href="/wallet/withdraw" className="bg-white hover:bg-slate-100 text-slate-900 border border-slate-200 px-8 py-3 rounded-xl font-bold transition-all active:scale-95">
+                                    <Link href="/wallet/withdraw" className="bg-[#0095ff] hover:bg-[#0080db] text-white px-8 py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-500/20 active:scale-95">
                                         Withdraw
                                     </Link>
                                 </div>
@@ -151,7 +163,6 @@ export default async function WalletPage() {
                                 bountiesDone={bountiesDone}
                             />
 
-                            <h3 className="font-black text-slate-900 text-lg mb-6">Earnings History</h3>
                             <EarningsChart data={chartData} />
 
                             <ActivityList activities={activities} />

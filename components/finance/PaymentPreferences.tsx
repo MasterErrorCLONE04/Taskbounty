@@ -1,83 +1,76 @@
-
 'use client'
 
+import { ExternalLink, Loader2, ShieldCheck, Banknote } from 'lucide-react'
 import { useState } from 'react'
-import { ChevronDown } from 'lucide-react'
+import { createStripeDashboardLink } from '@/actions/payouts'
 
-export function PaymentPreferences() {
-    const [preferences, setPreferences] = useState({
-        defaultAddress: true,
-        autoStake: false,
-        twoFactor: true
-    })
+interface PaymentPreferencesProps {
+    stripeConnectId?: string | null
+}
 
-    const toggle = (key: keyof typeof preferences) => {
-        setPreferences(prev => ({ ...prev, [key]: !prev[key] }))
+export function PaymentPreferences({ stripeConnectId }: PaymentPreferencesProps) {
+    const [loading, setLoading] = useState(false)
+
+    const handleOpenStripe = async () => {
+        if (!stripeConnectId) return alert('Debes configurar una cuenta de pago primero.')
+        setLoading(true)
+        try {
+            const url = await createStripeDashboardLink()
+            window.location.href = url
+        } catch (error: any) {
+            alert(error.message)
+            setLoading(false)
+        }
     }
 
     return (
         <div className="mb-10">
-            <h3 className="font-black text-slate-900 text-lg mb-6">Payment Preferences</h3>
+            <h3 className="font-black text-slate-900 text-lg mb-6">Payment Security & Preferences</h3>
 
             <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden divide-y divide-slate-100">
 
                 {/* Default Address */}
                 <div className="p-6 flex items-center justify-between">
-                    <div>
-                        <p className="font-bold text-slate-900 text-sm mb-1">Default withdrawal address</p>
-                        <p className="text-xs text-slate-500">Always use main wallet for automated payouts</p>
+                    <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 bg-blue-50 text-blue-500 rounded-lg flex items-center justify-center shrink-0">
+                            <Banknote className="w-5 h-5" />
+                        </div>
+                        <div>
+                            <p className="font-bold text-slate-900 text-sm">Default withdrawal bank</p>
+                            <p className="text-xs text-slate-500 mt-0.5">Manage which bank account receives your payouts via Stripe</p>
+                        </div>
                     </div>
                     <button
-                        onClick={() => toggle('defaultAddress')}
-                        className={`w-12 h-7 rounded-full transition-colors relative ${preferences.defaultAddress ? 'bg-blue-500' : 'bg-slate-200'}`}
+                        onClick={handleOpenStripe}
+                        disabled={loading || !stripeConnectId}
+                        className="text-xs font-bold text-slate-700 bg-slate-100 px-3 py-1.5 hover:bg-slate-200 transition-colors rounded-lg flex items-center gap-1.5 disabled:opacity-50"
                     >
-                        <div className={`w-5 h-5 bg-white rounded-full absolute top-1 transition-transform ${preferences.defaultAddress ? 'left-6' : 'left-1'}`} />
-                    </button>
-                </div>
-
-                {/* Auto-stake */}
-                <div className="p-6 flex items-center justify-between">
-                    <div>
-                        <p className="font-bold text-slate-900 text-sm mb-1">Auto-stake earnings</p>
-                        <p className="text-xs text-slate-500">Automatically stake 20% of bounty rewards</p>
-                    </div>
-                    <button
-                        onClick={() => toggle('autoStake')}
-                        className={`w-12 h-7 rounded-full transition-colors relative ${preferences.autoStake ? 'bg-blue-500' : 'bg-slate-200'}`}
-                    >
-                        <div className={`w-5 h-5 bg-white rounded-full absolute top-1 transition-transform ${preferences.autoStake ? 'left-6' : 'left-1'}`} />
+                        {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <><ExternalLink className="w-3.5 h-3.5" /> Manage</>}
                     </button>
                 </div>
 
                 {/* 2FA */}
                 <div className="p-6 flex items-center justify-between">
-                    <div>
-                        <p className="font-bold text-slate-900 text-sm mb-1">Two-factor authentication for withdrawals</p>
-                        <p className="text-xs text-slate-500">Required for all transactions over $100</p>
+                    <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 bg-green-50 text-green-500 rounded-lg flex items-center justify-center shrink-0">
+                            <ShieldCheck className="w-5 h-5" />
+                        </div>
+                        <div>
+                            <p className="font-bold text-slate-900 text-sm">Transfer Security (2FA)</p>
+                            <p className="text-xs text-slate-500 mt-0.5">Edit 2-factor authentication & security for Stripe withdrawals</p>
+                        </div>
                     </div>
                     <button
-                        onClick={() => toggle('twoFactor')}
-                        className={`w-12 h-7 rounded-full transition-colors relative ${preferences.twoFactor ? 'bg-blue-500' : 'bg-slate-200'}`}
+                        onClick={handleOpenStripe}
+                        disabled={loading || !stripeConnectId}
+                        className="text-xs font-bold text-slate-700 bg-slate-100 px-3 py-1.5 hover:bg-slate-200 transition-colors rounded-lg flex items-center gap-1.5 disabled:opacity-50"
                     >
-                        <div className={`w-5 h-5 bg-white rounded-full absolute top-1 transition-transform ${preferences.twoFactor ? 'left-6' : 'left-1'}`} />
+                        {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <><ExternalLink className="w-3.5 h-3.5" /> Edit</>}
                     </button>
                 </div>
 
             </div>
 
-            <div className="mt-8">
-                <h3 className="font-black text-slate-900 text-lg mb-4">Currency Preference</h3>
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Preferred Display Currency</p>
-                <div className="relative">
-                    <select className="w-full appearance-none bg-slate-50 border border-slate-200 text-slate-900 text-sm font-bold rounded-xl px-4 py-3 outline-none focus:border-blue-500 transition-colors">
-                        <option>USDC (USD Coin)</option>
-                        <option>ETH (Ethereum)</option>
-                        <option>BTC (Bitcoin)</option>
-                        <option>USD (Fiat)</option>
-                    </select>
-                    <ChevronDown className="bg-slate-50 w-5 h-5 text-slate-500 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
-                </div>
-            </div>
         </div>
     )
 }

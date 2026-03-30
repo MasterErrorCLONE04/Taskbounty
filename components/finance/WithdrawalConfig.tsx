@@ -72,7 +72,7 @@ export function WithdrawalConfig({ availableBalance, stripeConnectId, userEmail 
                 </div>
                 <h2 className="text-3xl font-black text-slate-900 mb-4">Withdrawal Initiated!</h2>
                 <p className="text-lg text-slate-500 mb-10">
-                    Your funds of <span className="font-black text-slate-900">${parsedAmount.toFixed(2)}</span> are on the way to your connected wallet.
+                    Your funds of <span className="font-black text-slate-900">${parsedAmount.toFixed(2)}</span> are on the way to your connected account.
                 </p>
                 <button
                     onClick={() => {
@@ -103,7 +103,7 @@ export function WithdrawalConfig({ availableBalance, stripeConnectId, userEmail 
                     <span className="text-5xl font-black text-slate-900 tracking-tight">
                         ${availableBalance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                     </span>
-                    <span className="text-xl font-black text-slate-400">USDC</span>
+                    <span className="text-xl font-black text-slate-400">USD</span>
                 </div>
             </div>
 
@@ -112,7 +112,7 @@ export function WithdrawalConfig({ availableBalance, stripeConnectId, userEmail 
                     <div className="bg-white w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
                         <Banknote className="w-8 h-8 text-blue-500" />
                     </div>
-                    <h3 className="text-lg font-bold text-slate-900 mb-2">Connect a Wallet</h3>
+                    <h3 className="text-lg font-bold text-slate-900 mb-2">Connect Bank Account</h3>
                     <p className="text-slate-500 mb-6 text-sm">
                         Link your Stripe account to start withdrawing funds securely.
                     </p>
@@ -152,12 +152,12 @@ export function WithdrawalConfig({ availableBalance, stripeConnectId, userEmail 
                     {/* Destination Tabs */}
                     <div>
                         <label className="block text-xs font-bold text-slate-900 uppercase tracking-wide mb-3">
-                            Destination Wallet
+                            Destination Account
                         </label>
                         <div className="grid grid-cols-2 gap-4">
                             <button className="flex items-center justify-center gap-2 border-2 border-blue-500 bg-blue-50/50 text-blue-600 py-4 rounded-xl font-bold transition-all">
                                 <Banknote className="w-5 h-5" />
-                                Connected Wallet
+                                Connected Card/Bank
                             </button>
                             <button className="flex items-center justify-center gap-2 border border-slate-200 bg-white text-slate-600 hover:border-slate-300 py-4 rounded-xl font-bold transition-all" onClick={handleOnboarding}>
                                 <ExternalLink className="w-5 h-5" />
@@ -176,17 +176,13 @@ export function WithdrawalConfig({ availableBalance, stripeConnectId, userEmail 
                     {/* Breakdown */}
                     <div className="bg-slate-50 rounded-2xl p-6 space-y-3">
                         <div className="flex justify-between text-xs font-medium text-slate-500">
-                            <span>Network Fee (Ethereum)</span>
-                            <span>12.50 USDC</span>
-                        </div>
-                        <div className="flex justify-between text-xs font-medium text-slate-500">
                             <span>Service Fee (15%)</span>
-                            <span>{fee.toFixed(2)} USDC</span>
+                            <span>{fee.toFixed(2)} USD</span>
                         </div>
                         <div className="h-px bg-slate-200 my-2" />
                         <div className="flex justify-between items-center">
                             <span className="font-bold text-slate-900">Total to Receive</span>
-                            <span className="text-xl font-black text-[#0095ff]">{netAmount > 0 ? netAmount.toFixed(2) : '0.00'} USDC</span>
+                            <span className="text-xl font-black text-[#0095ff]">{netAmount > 0 ? netAmount.toFixed(2) : '0.00'} USD</span>
                         </div>
                     </div>
 

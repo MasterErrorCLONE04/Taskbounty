@@ -46,7 +46,7 @@ export function ActivityList({ activities }: ActivityListProps) {
                             <div className="text-right">
                                 <span className={`block font-black text-sm mb-1 ${item.type === 'PAYMENT' ? 'text-green-600' : 'text-slate-900'
                                     }`}>
-                                    {item.type === 'PAYMENT' ? '+' : '-'}${Math.abs(item.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })} <span className="text-[10px] text-slate-400">USDC</span>
+                                    {item.type === 'PAYMENT' ? '+' : '-'}${Math.abs(item.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })} <span className="text-[10px] text-slate-400">USD</span>
                                 </span>
                                 <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide float-right
                                     ${item.status === 'COMPLETED' ? 'bg-green-50 text-green-700' :

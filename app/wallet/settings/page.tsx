@@ -52,9 +52,9 @@ export default async function PaymentSettingsPage() {
                                 userEmail={userData?.email || user.email}
                             />
 
-                            <PaymentPreferences />
+                            <PaymentPreferences stripeConnectId={userData?.stripe_connect_id} />
 
-                            <TaxInfoCard />
+                            <TaxInfoCard stripeConnectId={userData?.stripe_connect_id} />
                         </div>
 
                         {/* Right Sidebar - Security Tips */}
