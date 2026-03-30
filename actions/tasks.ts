@@ -415,7 +415,7 @@ export async function cancelTask(taskId: string) {
     // 1. Verify task belongs to user and is in a cancellable state
     const { data: task } = await supabase
         .from('tasks')
-        .select('status, bounty_amount')
+        .select('status, bounty_amount, client_id')
         .eq('id', taskId)
         .eq('client_id', user.id)
         .single()
@@ -425,7 +425,33 @@ export async function cancelTask(taskId: string) {
         throw new Error('Esta tarea no puede ser cancelada.')
     }
 
-    // 2. Update status
+    // 2. REFUND ESCROW LOGIC
+    // Move any 'HELD' payments back to the client's wallet as 'REFUNDED'
+    const adminSupabase = createAdminClient()
+    
+    // A. Mark payments as refunded
+    await adminSupabase
+        .from('payments')
+        .update({ status: 'REFUNDED', updated_at: new Date().toISOString() })
+        .eq('task_id', taskId)
+        .eq('status', 'HELD')
+
+    // B. Re-credit the client's balance
+    const { data: balance } = await adminSupabase
+        .from('balances')
+        .select('available_balance')
+        .eq('user_id', task.client_id)
+        .single()
+
+    const currentBalance = balance?.available_balance ? Number(balance.available_balance) : 0
+    const newBalance = currentBalance + Number(task.bounty_amount)
+    
+    await adminSupabase
+        .from('balances')
+        .update({ available_balance: newBalance })
+        .eq('user_id', task.client_id)
+
+    // 3. Update task status
     const { error } = await supabase
         .from('tasks')
         .update({
@@ -436,8 +462,7 @@ export async function cancelTask(taskId: string) {
 
     if (error) throw error
 
-    // 3. Log state change
-    const adminSupabase = createAdminClient()
+    // 4. Log state change
     await adminSupabase
         .from('state_logs')
         .insert({
@@ -455,17 +480,18 @@ export async function cancelTask(taskId: string) {
 }
 
 /**
- * Increase the bounty of a task (simplified for MVP)
+ * Create a PaymentIntent to increase a task's bounty
  */
-export async function increaseBounty(taskId: string, additionalAmount: number) {
+export async function createBountyIncreasePaymentIntent(taskId: string, additionalAmount: number) {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
+
     if (!user) throw new Error('Unauthorized')
 
     // 1. Get current task
     const { data: task } = await supabase
         .from('tasks')
-        .select('bounty_amount, status')
+        .select('bounty_amount, status, client_id')
         .eq('id', taskId)
         .eq('client_id', user.id)
         .single()
@@ -475,42 +501,26 @@ export async function increaseBounty(taskId: string, additionalAmount: number) {
         throw new Error('No puedes aumentar el bounty de una tarea cerrada.')
     }
 
-    const newAmount = Number(task.bounty_amount) + Number(additionalAmount)
+    if (additionalAmount < 5) throw new Error('El aumento minimo es $5.00')
 
-    // 2. Update bounty
-    const { error } = await supabase
-        .from('tasks')
-        .update({
-            bounty_amount: newAmount,
-            updated_at: new Date().toISOString()
+    // 2. Create PaymentIntent in Stripe
+    let paymentIntent;
+    try {
+        paymentIntent = await stripe.paymentIntents.create({
+            amount: Math.round(additionalAmount * 100), // In cents
+            currency: 'usd',
+            metadata: {
+                task_id: taskId,
+                client_id: user.id,
+                action: 'increase_bounty',
+                amount: additionalAmount.toString() // Save amount for webhook
+            },
+            capture_method: 'automatic'
         })
-        .eq('id', taskId)
+    } catch (stripeErr: any) {
+        console.error('Stripe Error:', stripeErr)
+        throw new Error(`Error de Pago (Stripe): ${stripeErr.message}`)
+    }
 
-    if (error) throw error
-
-    // 3. Create a record of the addition
-    const adminSupabase = createAdminClient()
-    await adminSupabase
-        .from('payments')
-        .insert({
-            task_id: taskId,
-            client_id: user.id,
-            amount: additionalAmount,
-            status: 'HELD', // Assuming it's already funded for this MVP flow
-            created_at: new Date().toISOString()
-        })
-
-    // 4. Log state change
-    await adminSupabase
-        .from('state_logs')
-        .insert({
-            entity_type: 'task',
-            entity_id: taskId,
-            new_state: 'BOUNTY_INCREASED',
-            user_id: user.id,
-            metadata: { additional_amount: additionalAmount, new_total: newAmount }
-        })
-
-    revalidatePath(`/tasks/${taskId}/manage`)
-    return { success: true }
+    return { clientSecret: paymentIntent.client_secret }
 }

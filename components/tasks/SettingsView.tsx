@@ -2,7 +2,7 @@
 
 import React, { useState, useTransition } from 'react'
 import { Calendar, DollarSign, Loader2, AlertTriangle, CheckCircle2 } from 'lucide-react'
-import { updateTask, cancelTask, increaseBounty } from '@/actions/tasks'
+import { updateTask, cancelTask, createBountyIncreasePaymentIntent } from '@/actions/tasks'
 import { ConfirmModal } from '@/components/ui/ConfirmModal'
 import { useToast } from '@/components/ui/ToastProvider'
 
@@ -39,9 +39,9 @@ const SettingsView: React.FC<SettingsViewProps> = ({ task }) => {
 
         startTransition(async () => {
             try {
-                await increaseBounty(task.id, amount)
+                const { clientSecret } = await createBountyIncreasePaymentIntent(task.id, amount)
+                window.location.href = `/tasks/${task.id}/increase-bounty?secret=${clientSecret}`
                 setAdditionalAmount('')
-                toast(`¡Bounty aumentado! Nuevo total: $${Number(task.bounty_amount) + amount}`, 'success')
             } catch (err: any) {
                 toast(err.message || 'Error al aumentar el bounty', 'error')
             }

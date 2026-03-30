@@ -81,6 +81,49 @@ export async function POST(req: Request) {
                     // Force cache invalidation for premium page and profile
                     revalidatePath('/premium')
                     revalidatePath(`/profile/${userId}`)
+                } else if (paymentIntent.metadata.action === 'increase_bounty') {
+                    // Bounty Increase Logic
+                    const taskId = paymentIntent.metadata.task_id
+                    const clientId = paymentIntent.metadata.client_id
+                    const amount = Number(paymentIntent.metadata.amount)
+
+                    console.log(`Processing bounty increase of ${amount} for task ${taskId}`)
+
+                    // 1. Fetch current task to increment bounty
+                    const { data: task } = await supabase
+                        .from('tasks')
+                        .select('bounty_amount')
+                        .eq('id', taskId)
+                        .single()
+
+                    if (task) {
+                        const newAmount = Number(task.bounty_amount) + amount
+                        
+                        // 2. Update task bounty
+                        await supabase.from('tasks').update({ bounty_amount: newAmount, updated_at: new Date().toISOString() }).eq('id', taskId)
+                        
+                        // 3. Create payment record
+                        await supabase.from('payments').insert({
+                            task_id: taskId,
+                            client_id: clientId,
+                            amount: amount,
+                            status: 'HELD', // Safe because Stripe succeeded
+                            stripe_payment_intent_id: paymentIntent.id,
+                            created_at: new Date().toISOString()
+                        })
+
+                        // 4. Log state change
+                        await supabase.from('state_logs').insert({
+                            entity_type: 'task',
+                            entity_id: taskId,
+                            new_state: 'BOUNTY_INCREASED',
+                            user_id: clientId,
+                            metadata: { additional_amount: amount, new_total: newAmount }
+                        })
+                    }
+
+                    revalidatePath(`/tasks/${taskId}`)
+                    revalidatePath(`/tasks/${taskId}/manage`)
                 } else {
                     // Task Payment Logic
                     const taskId = paymentIntent.metadata.task_id

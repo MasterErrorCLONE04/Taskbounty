@@ -1,13 +1,58 @@
+"use client"
+
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card"
 import { Button } from "@/components/ui/Button"
 import Link from 'next/link'
+import { supabase } from "@/lib/supabase/client"
 
 interface SuggestedBountiesCardProps {
     bounties?: any[]
 }
 
 export function SuggestedBountiesCard({ bounties }: SuggestedBountiesCardProps) {
-    const displayBounties = bounties || []
+    const [displayBounties, setDisplayBounties] = useState(bounties || [])
+
+    // Resync if props change server-side
+    useEffect(() => {
+        if (bounties) setDisplayBounties(bounties)
+    }, [bounties])
+
+    // Realtime Dynamic Updates
+    useEffect(() => {
+        let channel: ReturnType<typeof supabase.channel> | null = null;
+
+        supabase.auth.getUser().then(({ data: { user } }) => {
+            if (!user) return
+
+            const fetchLatest = async () => {
+                const { data } = await supabase
+                    .from('tasks')
+                    .select('id, title, bounty_amount, category, currency')
+                    .neq('client_id', user.id)
+                    .eq('status', 'OPEN')
+                    .order('created_at', { ascending: false })
+                    .limit(3)
+
+                if (data) setDisplayBounties(data)
+            }
+
+            channel = supabase.channel('suggested-bounties-update')
+                .on('postgres_changes', {
+                    event: '*',
+                    schema: 'public',
+                    table: 'tasks'
+                }, () => {
+                    // Triggers anytime a task is INSERTED, UPDATED (like closed/finished), or DELETED
+                    fetchLatest()
+                })
+                .subscribe()
+        })
+
+        return () => {
+            if (channel) supabase.removeChannel(channel)
+        }
+    }, [])
 
     return (
         <Card className="border-slate-100 shadow-sm">

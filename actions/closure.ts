@@ -131,7 +131,20 @@ export async function submitRating(taskId: string, targetUserId: string, rating:
         throw new Error('No tienes permiso para calificar en esta tarea.')
     }
 
-    // 2. Insert the review
+    // 2. Prevent duplicate ratings (Spam/Abuse check)
+    const { data: existingReview, error: existingReviewError } = await supabase
+        .from('reviews')
+        .select('id')
+        .eq('task_id', taskId)
+        .eq('reviewer_id', user.id)
+        .eq('target_id', targetUserId)
+        .single()
+
+    if (existingReview) {
+        throw new Error('Ya has calificado a este usuario para esta tarea.')
+    }
+
+    // 3. Insert the review
     // The SQL Trigger 'on_review_submitted' will automatically update the average in 'users' table.
     const { error } = await supabase
         .from('reviews')

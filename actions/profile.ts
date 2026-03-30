@@ -160,6 +160,7 @@ export async function getRightSidebarData() {
     const { data: suggestedBounties } = await supabase
         .from('tasks')
         .select('id, title, bounty_amount, category, currency')
+        .neq('client_id', user.id)
         .eq('status', 'OPEN')
         .order('created_at', { ascending: false })
         .limit(3)
