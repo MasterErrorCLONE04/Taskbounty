@@ -7,7 +7,21 @@ export default async function ApplyToTaskPage({ params }: { params: Promise<{ id
     const supabase = await createClient()
     const { id } = await params
     const { data: { user } } = await supabase.auth.getUser()
-    const profile = user ? await getProfile(user.id) : null
+
+    if (!user) {
+        const { redirect } = await import('next/navigation')
+        redirect('/?login=true')
+        return null // To satisfy TS
+    }
+
+    const { data: task } = await supabase.from('tasks').select('client_id').eq('id', id).single()
+    if (task?.client_id === user.id) {
+        const { redirect } = await import('next/navigation')
+        redirect(`/tasks/${id}`)
+        return null // To satisfy TS
+    }
+
+    const profile = await getProfile(user.id)
 
     return (
         <div className="h-screen bg-white flex flex-col overflow-hidden">

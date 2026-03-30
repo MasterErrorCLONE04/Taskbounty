@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 
 /**
@@ -27,14 +28,16 @@ export async function forceActivateTask(taskId: string) {
     if (task.status !== 'DRAFT') throw new Error('Solo las tareas en borrador pueden ser forzadas.')
 
     // 2. Perform same logic as Stripe Webhook
+    const adminSupabase = createAdminClient()
+    
     // 2.1 Update payment status (if exists)
-    await supabase
+    await adminSupabase
         .from('payments')
         .update({ status: 'HELD', updated_at: new Date().toISOString() })
         .eq('task_id', taskId)
 
     // 2.2 Update task status
-    const { error } = await supabase
+    const { error } = await adminSupabase
         .from('tasks')
         .update({ status: 'OPEN', updated_at: new Date().toISOString() })
         .eq('id', taskId)
@@ -42,7 +45,7 @@ export async function forceActivateTask(taskId: string) {
     if (error) throw error
 
     // 2.3 Log state change
-    await supabase
+    await adminSupabase
         .from('state_logs')
         .insert({
             entity_type: 'task',

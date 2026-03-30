@@ -36,15 +36,14 @@ export default async function ProfilePage() {
                 <TopNavbar user={user} profile={profile} />
 
                 <div className="flex-1 flex justify-center overflow-hidden bg-white">
-                    {/* Center Feed */}
-
-                    <main className="flex-1 max-w-4xl border-x border-slate-50 h-full overflow-y-auto no-scrollbar">
+                    {/* El ProfileView usará el espacio combinado del LeftSidebar y el Center Feed */}
+                    <main className="flex-1 w-full max-w-[992px] border-x border-slate-50 h-full overflow-y-auto no-scrollbar">
                         <ProfileView />
                     </main>
 
                     {/* Right Sidebar */}
                     <RightSidebar
-                        user={user}
+                        user={profile || user}
                         balance={sidebarData?.balance}
                         collaborators={sidebarData?.collaborators}
                         suggestedBounties={sidebarData?.suggestedBounties}

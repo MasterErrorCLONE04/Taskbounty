@@ -132,6 +132,21 @@ export async function getConversations() {
  */
 export async function getDirectMessages(conversationId: string) {
     const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) return []
+
+    // 1. Validate participation
+    const { data: conversation } = await supabase
+        .from('conversations')
+        .select('user1_id, user2_id')
+        .eq('id', conversationId)
+        .single()
+
+    if (!conversation) return []
+    if (conversation.user1_id !== user.id && conversation.user2_id !== user.id) {
+        throw new Error('Unauthorized: You are not part of this conversation.')
+    }
 
     const { data: messages, error } = await supabase
         .from('direct_messages')
@@ -155,7 +170,19 @@ export async function sendDirectMessage(conversationId: string, content: string)
 
     if (!user) throw new Error('Unauthorized')
 
-    // 1. Insert message
+    // 1. Validate participation
+    const { data: conversation } = await supabase
+        .from('conversations')
+        .select('user1_id, user2_id')
+        .eq('id', conversationId)
+        .single()
+
+    if (!conversation) throw new Error('Conversation not found')
+    if (conversation.user1_id !== user.id && conversation.user2_id !== user.id) {
+        throw new Error('Unauthorized: You are not part of this conversation.')
+    }
+
+    // 2. Insert message
     const { error } = await supabase
         .from('direct_messages')
         .insert({

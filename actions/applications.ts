@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 
 /**
@@ -130,7 +131,8 @@ export async function acceptApplication(taskId: string, applicationId: string, w
         .neq('id', applicationId)
 
     // Step D: Log state change
-    await supabase
+    const adminSupabase = createAdminClient()
+    await adminSupabase
         .from('state_logs')
         .insert({
             entity_type: 'task',

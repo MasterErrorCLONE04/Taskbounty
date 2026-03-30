@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { stripe } from '@/lib/stripe'
 import { VALID_TRANSITIONS } from '@/lib/validations'
 import { revalidatePath } from 'next/cache'
@@ -347,7 +348,7 @@ export async function getTasks(options: { search?: string, category?: string } =
             .from('tasks')
             .select(`
                 *,
-                client:users!client_id(id, name, avatar_url, bio, rating, is_verified),
+                client:users!client_id(id, name, avatar_url, bio, is_verified),
                 likes(count),
                 comments(count)
             `)
@@ -436,7 +437,8 @@ export async function cancelTask(taskId: string) {
     if (error) throw error
 
     // 3. Log state change
-    await supabase
+    const adminSupabase = createAdminClient()
+    await adminSupabase
         .from('state_logs')
         .insert({
             entity_type: 'task',
@@ -487,7 +489,8 @@ export async function increaseBounty(taskId: string, additionalAmount: number) {
     if (error) throw error
 
     // 3. Create a record of the addition
-    await supabase
+    const adminSupabase = createAdminClient()
+    await adminSupabase
         .from('payments')
         .insert({
             task_id: taskId,
@@ -498,7 +501,7 @@ export async function increaseBounty(taskId: string, additionalAmount: number) {
         })
 
     // 4. Log state change
-    await supabase
+    await adminSupabase
         .from('state_logs')
         .insert({
             entity_type: 'task',

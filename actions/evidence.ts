@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 
 /**
@@ -28,7 +29,8 @@ export async function submitEvidence(taskId: string, formData: {
     }
 
     // 3. Update task status to SUBMITTED
-    const { error: taskError } = await supabase
+    const adminSupabase = createAdminClient()
+    const { error: taskError } = await adminSupabase
         .from('tasks')
         .update({
             status: 'SUBMITTED',
@@ -39,7 +41,7 @@ export async function submitEvidence(taskId: string, formData: {
     if (taskError) throw taskError
 
     // Step D: Log state change
-    await supabase
+    await adminSupabase
         .from('state_logs')
         .insert({
             entity_type: 'task',

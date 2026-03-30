@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { stripe } from '@/lib/stripe'
 import { revalidatePath } from 'next/cache'
 import { headers } from 'next/headers'
@@ -88,7 +89,9 @@ export async function executeWithdrawal(amount: number) {
     if (amount < 1) throw new Error('El retiro mínimo es de $1.00')
 
     // 2. Record the withdrawal in PENDING state
-    const { data: withdrawal, error: wError } = await supabase
+    // Use AdminSupabase because standard RLS blocks INSERT/UPDATE on financial tables
+    const adminSupabase = createAdminClient()
+    const { data: withdrawal, error: wError } = await adminSupabase
         .from('withdrawals')
         .insert({
             user_id: user.id,
@@ -102,7 +105,8 @@ export async function executeWithdrawal(amount: number) {
 
     try {
         // 3. Deduct from platform balance (Full amount including fee)
-        const { error: bError } = await supabase.rpc('deduct_balance', {
+        // Using AdminClient to be extremely secure.
+        const { error: bError } = await adminSupabase.rpc('deduct_balance', {
             p_user_id: user.id,
             p_amount: amount
         })
@@ -129,7 +133,7 @@ export async function executeWithdrawal(amount: number) {
         })
 
         // 5. Update withdrawal record
-        await supabase
+        await adminSupabase
             .from('withdrawals')
             .update({
                 status: 'COMPLETED',
@@ -143,7 +147,7 @@ export async function executeWithdrawal(amount: number) {
     } catch (err: any) {
         // Rollback balance if transfer failed (Optional: depending on deduct_balance implementation)
         // For MVP, we'll mark as FAILED
-        await supabase
+        await adminSupabase
             .from('withdrawals')
             .update({ status: 'FAILED' })
             .eq('id', withdrawal.id)

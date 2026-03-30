@@ -7,7 +7,7 @@ interface JobsFiltersProps {
 }
 
 export function JobsFilters({ activeCategory, onCategoryChange }: JobsFiltersProps) {
-    const categories = ['All', 'Diseño', 'Código', 'Content', 'Video', 'General']
+    const categories = ['All', 'Design', 'Programming', 'Content', 'Video', 'General']
 
     return (
         <div className="px-6 flex flex-wrap gap-2 pb-6 border-b border-slate-50 bg-white">

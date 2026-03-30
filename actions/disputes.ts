@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 
 /**
@@ -64,7 +65,8 @@ export async function openDispute(taskId: string, reason: string) {
     if (taskUpdateError) throw taskUpdateError
 
     // C. Log state change
-    await supabase
+    const adminSupabase = createAdminClient()
+    await adminSupabase
         .from('state_logs')
         .insert({
             entity_type: 'task',
@@ -102,8 +104,17 @@ export async function openDispute(taskId: string, reason: string) {
 export async function resolveDispute(disputeId: string, resolution: 'release' | 'refund', adminComment: string) {
     const supabase = await createClient()
 
-    // 1. Get dispute details
-    const { data: dispute, error: disputeFetchError } = await supabase
+    // 1. SECURE CHECK: Verify Admin Role
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) throw new Error('Unauthorized')
+
+    const { data: dbUser } = await supabase.from('users').select('role').eq('id', user.id).single()
+    if (dbUser?.role !== 'admin') throw new Error('Unauthorized: Solo los administradores pueden resolver disputas.')
+
+    const adminSupabase = createAdminClient()
+
+    // 2. Get dispute details
+    const { data: dispute, error: disputeFetchError } = await adminSupabase
         .from('disputes')
         .select('*, tasks(*)')
         .eq('id', disputeId)
@@ -114,18 +125,18 @@ export async function resolveDispute(disputeId: string, resolution: 'release' | 
     const task = dispute.tasks
     if (dispute.status !== 'open') throw new Error('Esta disputa ya ha sido resuelta.')
 
-    // 2. Execute resolution
+    // 3. Execute resolution
     if (resolution === 'release') {
         // Same logic as approveAndRelease
         // A. Update payment status
-        await supabase
+        await adminSupabase
             .from('payments')
             .update({ status: 'RELEASED', updated_at: new Date().toISOString() })
             .eq('task_id', task.id)
             .eq('status', 'HELD')
 
         // B. Update worker balance
-        const { data: balance } = await supabase
+        const { data: balance } = await adminSupabase
             .from('balances')
             .select('available_balance')
             .eq('user_id', task.assigned_worker_id)
@@ -133,13 +144,13 @@ export async function resolveDispute(disputeId: string, resolution: 'release' | 
 
         const currentBalance = balance?.available_balance ? Number(balance.available_balance) : 0
         const newBalance = currentBalance + Number(task.bounty_amount)
-        await supabase
+        await adminSupabase
             .from('balances')
             .update({ available_balance: newBalance })
             .eq('user_id', task.assigned_worker_id)
 
         // C. Update task status
-        await supabase
+        await adminSupabase
             .from('tasks')
             .update({ status: 'COMPLETED' })
             .eq('id', task.id)
@@ -147,14 +158,14 @@ export async function resolveDispute(disputeId: string, resolution: 'release' | 
     } else if (resolution === 'refund') {
         // Return funds to client balance
         // A. Update payment status
-        await supabase
+        await adminSupabase
             .from('payments')
             .update({ status: 'REFUNDED', updated_at: new Date().toISOString() })
             .eq('task_id', task.id)
             .eq('status', 'HELD')
 
         // B. Update client balance
-        const { data: balance } = await supabase
+        const { data: balance } = await adminSupabase
             .from('balances')
             .select('available_balance')
             .eq('user_id', task.client_id)
@@ -162,20 +173,20 @@ export async function resolveDispute(disputeId: string, resolution: 'release' | 
 
         const currentBalance = balance?.available_balance ? Number(balance.available_balance) : 0
         const newBalance = currentBalance + Number(task.bounty_amount)
-        await supabase
+        await adminSupabase
             .from('balances')
             .update({ available_balance: newBalance })
             .eq('user_id', task.client_id)
 
         // C. Update task status
-        await supabase
+        await adminSupabase
             .from('tasks')
             .update({ status: 'CANCELLED' })
             .eq('id', task.id)
     }
 
-    // 3. Update dispute record
-    await supabase
+    // 4. Update dispute record
+    await adminSupabase
         .from('disputes')
         .update({
             status: 'resolved',
@@ -184,11 +195,11 @@ export async function resolveDispute(disputeId: string, resolution: 'release' | 
         })
         .eq('id', disputeId)
 
-    // 4. Notification for both
+    // 5. Notification for both
     const participants = [task.client_id, task.assigned_worker_id]
     for (const pid of participants) {
         if (!pid) continue
-        await supabase
+        await adminSupabase
             .from('notifications')
             .insert({
                 user_id: pid,

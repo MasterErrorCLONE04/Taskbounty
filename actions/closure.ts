@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 
 /**
@@ -31,11 +32,11 @@ export async function approveAndRelease(taskId: string) {
     }
 
     // 3. SECURE TRANSACTION: Release funds to worker
-    // In a real app, this would also include a Stripe Capture if we were doing it on-demand,
-    // but here we move money from 'escrow' (payments table) to 'worker balance'.
+    // Using Admin Client since standard users are strictly blocked by RLS from altering balances/payments.
+    const adminSupabase = createAdminClient()
 
     // Step A: Update payment status to RELEASED
-    const { error: paymentError } = await supabase
+    const { error: paymentError } = await adminSupabase
         .from('payments')
         .update({ status: 'RELEASED', updated_at: new Date().toISOString() })
         .eq('task_id', taskId)
@@ -45,7 +46,7 @@ export async function approveAndRelease(taskId: string) {
 
     // Step B: Update worker's balance (available_balance)
     // Get current worker balance
-    const { data: balance, error: balanceFetchError } = await supabase
+    const { data: balance, error: balanceFetchError } = await adminSupabase
         .from('balances')
         .select('available_balance')
         .eq('user_id', task.assigned_worker_id)
@@ -55,7 +56,7 @@ export async function approveAndRelease(taskId: string) {
 
     const newBalance = Number(balance.available_balance) + Number(task.bounty_amount)
 
-    const { error: balanceUpdateError } = await supabase
+    const { error: balanceUpdateError } = await adminSupabase
         .from('balances')
         .update({
             available_balance: newBalance,
@@ -77,7 +78,7 @@ export async function approveAndRelease(taskId: string) {
     if (taskUpdateError) throw taskUpdateError
 
     // Step D: Log state change
-    await supabase
+    await adminSupabase
         .from('state_logs')
         .insert({
             entity_type: 'task',

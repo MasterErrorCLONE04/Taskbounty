@@ -45,6 +45,13 @@ export default async function ManageTaskPage({
 
     if (!task) notFound()
 
+    // SECURITY CHECK: Only the task creator can access the manage tracking page
+    if (!user || user.id !== task.client_id) {
+        // Redirigimos al usuario a la vista normal de la tarea si intenta vulnerar la URL
+        const { redirect } = await import('next/navigation')
+        redirect(`/tasks/${id}`)
+    }
+
     // 2. Fetch applications for this task
     const { data: applications } = await supabase
         .from('applications')

@@ -74,7 +74,7 @@ export default async function PublicProfilePage(props: { params: Promise<{ id: s
 
             <div className="flex-1 flex justify-center overflow-hidden bg-white">
                 {/* Center Feed */}
-                <main className="flex-1 max-w-4xl border-x border-slate-50 h-full overflow-y-auto no-scrollbar">
+                <main className="flex-1 w-full max-w-[992px] border-x border-slate-50 h-full overflow-y-auto no-scrollbar">
                     <ProfileView initialUser={publicProfile} />
                 </main>
 

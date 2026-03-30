@@ -1,0 +1,45 @@
+Initialising login role...
+Connecting to remote database...
+Do you want to push these migrations to the remote database?
+ ÔÇó 20240208000400_file_storage.sql
+ ÔÇó 20240208000500_user_profiles.sql
+ ÔÇó 20240208000600_add_task_category.sql
+ ÔÇó 20240208000700_task_rls_policies.sql
+ ÔÇó 20240208000800_avatars_storage.sql
+ ÔÇó 20240208000900_verified_badge.sql
+ ÔÇó 20240210_add_about_items.sql
+ ÔÇó 20240210_add_direct_messages.sql
+ ÔÇó 20240210_add_portfolio.sql
+ ÔÇó 20240210_add_social_features.sql
+ ÔÇó 20240210_add_social_triggers.sql
+ ÔÇó 20240210_follow_trigger.sql
+ ÔÇó 20240210_social_notifications_fix.sql
+ ÔÇó 20240211_allow_join_leave.sql
+ ÔÇó 20240211_create_groups_schema.sql
+ ÔÇó 20240211_enable_realtime_dm.sql
+ ÔÇó 20240211_fix_groups_rls.sql
+ ÔÇó 20260212000000_fix_role_registration_trigger.sql
+ ÔÇó 20260212000001_add_activate_task_rpc.sql
+ ÔÇó 20260212000002_add_task_settings_columns.sql
+ ÔÇó 20260213000000_add_plan_to_users.sql
+ ÔÇó 20260213000001_create_user_subscriptions.sql
+ ÔÇó 20260214000000_add_task_reports.sql
+ ÔÇó 20260329000000_secure_rls.sql
+ ÔÇó 20260329000001_secure_reviews_rls.sql
+
+ [Y/n] y
+Applying migration 20240208000400_file_storage.sql...
+NOTICE (42P07): relation "files" already exists, skipping
+ERROR: policy "Users can view files of tasks they are part of" for table "files" already exists (SQLSTATE 42710)
+At statement: 2                                                                                                 
+-- Policies for the files table                                                                                 
+CREATE POLICY "Users can view files of tasks they are part of"                                                  
+    ON public.files FOR SELECT                                                                                  
+    USING (                                                                                                     
+        auth.uid() = uploader_id OR                                                                             
+        EXISTS (                                                                                                
+            SELECT 1 FROM public.tasks t                                                                        
+            WHERE t.id = task_id AND (t.client_id = auth.uid() OR t.assigned_worker_id = auth.uid())            
+        )                                                                                                       
+)                                                                                                               
+Try rerunning the command with --debug to troubleshoot the error.

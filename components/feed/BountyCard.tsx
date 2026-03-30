@@ -68,6 +68,7 @@ export function BountyCard({ task, currentUser }: BountyCardProps) {
 
     // Check if current user is the author
     const isAuthor = currentUser?.id === task.client_id || currentUser?.id === user.id
+    const profileLink = isAuthor ? '/profile' : `/profile/${user.id}`
 
     const handleLike = async (e: React.MouseEvent) => {
         e.stopPropagation()
@@ -149,7 +150,7 @@ export function BountyCard({ task, currentUser }: BountyCardProps) {
                 {/* Header */}
                 <div className="flex justify-between items-start mb-4">
                     <div className="flex gap-3">
-                        <Link href={`/profile/${user.id}`} onClick={(e) => e.stopPropagation()}>
+                        <Link href={profileLink} onClick={(e) => e.stopPropagation()}>
                             <div className="relative">
                                 <img
                                     src={user.avatar}
@@ -161,7 +162,7 @@ export function BountyCard({ task, currentUser }: BountyCardProps) {
                         <div>
                             <div className="flex items-center gap-1.5">
                                 <Link
-                                    href={`/profile/${user.id}`}
+                                    href={profileLink}
                                     onClick={(e) => e.stopPropagation()}
                                     className="font-bold text-[16px] text-slate-900 hover:text-blue-600 transition-colors"
                                 >
